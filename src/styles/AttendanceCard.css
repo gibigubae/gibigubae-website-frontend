@@ -1,0 +1,79 @@
+.attendance-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 8px;
+  min-height: 100px;
+  text-align: center;
+  font-weight: 500;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.attendance-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-card.present {
+  background-color: #4ade80;
+  color: white;
+}
+
+.attendance-card.absent {
+  background-color: #ef4444;
+  color: white;
+}
+
+.attendance-card.pending {
+  background-color: #d4a574;
+  color: white;
+}
+
+/* Add clickable styling for pending cards */
+.attendance-card.clickable {
+  cursor: pointer;
+}
+
+.attendance-card.clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(212, 165, 116, 0.3);
+}
+
+.attendance-icon {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.attendance-date {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.attendance-time {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .attendance-card {
+    padding: 12px;
+    min-height: 90px;
+  }
+
+  .attendance-icon {
+    font-size: 20px;
+  }
+
+  .attendance-date {
+    font-size: 12px;
+  }
+
+  .attendance-time {
+    font-size: 11px;
+  }
+}

@@ -1,0 +1,502 @@
+.attendance-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  padding: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+}
+
+.attendance-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 1000px;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.modal-content {
+  padding: 24px;
+}
+
+/* Filters Section */
+.filters-section {
+  margin-bottom: 28px;
+}
+
+.filters-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.filter-btn.active {
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Table Section */
+.table-section {
+  margin-bottom: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.attendance-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-header,
+.actions-header {
+  text-align: center;
+}
+
+.user-row {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.2s ease;
+}
+
+.user-row:hover {
+  background-color: #f9fafb;
+}
+
+.user-row td {
+  padding: 16px;
+  vertical-align: middle;
+}
+
+/* User Cell */
+.user-cell {
+  width: 35%;
+  min-width: 200px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  font-weight: 600;
+}
+
+.status-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2.5px solid white;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+  word-break: break-word;
+}
+
+.user-email {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+/* Status Cell */
+.status-cell {
+  width: 20%;
+  text-align: center;
+  min-width: 100px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1.5px solid;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: transparent;
+}
+
+/* Actions Cell */
+.actions-cell {
+  width: 45%;
+  text-align: right;
+  min-width: 250px;
+}
+
+.actions-group {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.action-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: #eff6ff;
+}
+
+/* Export Section */
+.export-section {
+  display: flex;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.export-btn:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+  color: #1f2937;
+}
+
+/* Tablet Responsive Design */
+@media (max-width: 1024px) {
+  .modal-content {
+    padding: 20px;
+  }
+
+  .user-cell {
+    width: 30%;
+  }
+
+  .status-cell {
+    width: 18%;
+    min-width: 90px;
+  }
+
+  .actions-cell {
+    width: 52%;
+    min-width: auto;
+  }
+
+  .action-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+  .attendance-container {
+    padding: 12px;
+  }
+
+  .modal-header {
+    padding: 20px 16px 12px;
+  }
+
+  .modal-header h2 {
+    font-size: 18px;
+  }
+
+  .modal-content {
+    padding: 16px;
+  }
+
+  .filters-section {
+    margin-bottom: 20px;
+  }
+
+  .filter-buttons {
+    gap: 6px;
+  }
+
+  .filter-btn {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+
+  .attendance-table th {
+    padding: 10px 8px;
+    font-size: 10px;
+  }
+
+  .user-row td {
+    padding: 12px 8px;
+  }
+
+  .user-cell {
+    width: 100%;
+    min-width: unset;
+    padding-bottom: 8px;
+  }
+
+  .status-cell {
+    width: 100%;
+    min-width: unset;
+    text-align: left;
+    padding: 8px;
+    padding-bottom: 8px;
+  }
+
+  .status-cell .status-badge {
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+
+  .actions-cell {
+    width: 100%;
+    min-width: unset;
+    text-align: left;
+    padding: 8px;
+  }
+
+  /* Stack action buttons vertically on mobile for better usability */
+  .actions-group {
+    flex-direction: column;
+    gap: 6px;
+    justify-content: flex-start;
+  }
+
+  .action-btn {
+    width: 100%;
+    text-align: center;
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  /* Create card layout for mobile */
+  .user-row {
+    display: block;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 0;
+  }
+
+  .user-row:hover {
+    background-color: white;
+  }
+
+  .user-row td {
+    display: block;
+    border: none;
+    padding: 12px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .user-row td:last-child {
+    border-bottom: none;
+  }
+
+  .attendance-table thead {
+    display: none;
+  }
+
+  .user-info {
+    flex-wrap: nowrap;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .user-name {
+    font-size: 13px;
+  }
+
+  .user-email {
+    font-size: 11px;
+  }
+
+  .export-section {
+    gap: 8px;
+  }
+
+  .export-btn {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 12px;
+    justify-content: center;
+  }
+}
+
+/* Small Mobile Responsive Design */
+@media (max-width: 480px) {
+  .attendance-container {
+    padding: 8px;
+  }
+
+  .modal-header {
+    padding: 16px 12px 10px;
+  }
+
+  .modal-header h2 {
+    font-size: 16px;
+  }
+
+  .modal-content {
+    padding: 12px;
+  }
+
+  .filters-section h3 {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  .filter-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+    flex: 1;
+    min-width: calc(33.333% - 4px);
+  }
+
+  .filter-buttons {
+    gap: 4px;
+  }
+
+  .user-row {
+    margin-bottom: 10px;
+    border-radius: 6px;
+  }
+
+  .user-row td {
+    padding: 10px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .user-name {
+    font-size: 12px;
+  }
+
+  .user-email {
+    font-size: 10px;
+  }
+
+  .status-badge {
+    font-size: 9px;
+    padding: 3px 8px;
+  }
+
+  .action-btn {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  .export-btn {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+}

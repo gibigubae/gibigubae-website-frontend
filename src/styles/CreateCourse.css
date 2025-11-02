@@ -1,0 +1,195 @@
+/* Create Course Container */
+.create-course-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+  padding: 16px;
+}
+
+.create-course-card {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 100%;
+}
+
+.create-course-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.create-course-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Form Group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: 0.3px;
+}
+
+/* Form Input */
+.form-input,
+.form-textarea {
+  padding: 12px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: inherit;
+  background: #f9f9f9;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  color: #1a1a1a;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: #d4a574;
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: #999;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+.form-input.input-error,
+.form-textarea.input-error {
+  border-color: #d9534f;
+  background: #fef5f5;
+}
+
+.form-input.input-error:focus,
+.form-textarea.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(217, 83, 79, 0.1);
+  border-color: #d9534f;
+}
+
+/* Character Count */
+.char-count {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* Error Message */
+.error-text {
+  font-size: 12px;
+  color: #d9534f;
+  margin-top: 4px;
+}
+
+.error-message {
+  background: #fee;
+  color: #c00;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  border-left: 4px solid #c00;
+}
+
+/* Form Row - Date fields side by side on larger screens */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-row .form-group {
+  flex: 1;
+  gap: 6px;
+}
+
+/* Submit Button */
+.create-course-button {
+  width: 100%;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #d4a574 0%, #c9935a 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
+}
+
+.create-course-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(212, 165, 116, 0.4);
+}
+
+.create-course-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Tablet: 2-column date layout */
+@media (min-width: 640px) {
+  .create-course-card {
+    max-width: 600px;
+    padding: 40px;
+  }
+
+  .create-course-title {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+
+  .form-row {
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .form-row .form-group {
+    flex: 1;
+  }
+
+  .form-group {
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .create-course-container {
+    padding: 20px;
+  }
+
+  .create-course-card {
+    padding: 40px;
+  }
+
+  .create-course-title {
+    font-size: 32px;
+  }
+}
