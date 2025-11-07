@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import "./Auth.css"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./Auth.css";
 
 const SignUp = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     fatherName: "",
@@ -17,28 +17,28 @@ const SignUp = () => {
     idFile: null,
     email: "",
     password: "",
-  })
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target
+    const { name, value, type, files } = e.target;
     if (type === "file") {
       setFormData((prev) => ({
         ...prev,
         [name]: files[0],
-      }))
+      }));
     } else {
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-      }))
+      }));
     }
-  }
+  };
 
   const handleSignUp = async (e) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
     if (
       !formData.firstName ||
@@ -52,73 +52,78 @@ const SignUp = () => {
       !formData.email ||
       !formData.password
     ) {
-      setError("Please fill in all required fields")
-      return
+      setError("Please fill in all required fields");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const formDataWithFile = new FormData()
+      const formDataWithFile = new FormData();
       // Map client-side names to backend expected field names
-      formDataWithFile.append("first_name", formData.firstName)
-      formDataWithFile.append("father_name", formData.fatherName)
-      formDataWithFile.append("grand_father_name", formData.grandfatherName)
-      formDataWithFile.append("phone_number", formData.phoneNumber)
-      formDataWithFile.append("department_name", formData.department)
-      formDataWithFile.append("gender", formData.gender)
-      formDataWithFile.append("id_number", formData.id)
+      formDataWithFile.append("first_name", formData.firstName);
+      formDataWithFile.append("father_name", formData.fatherName);
+      formDataWithFile.append("grand_father_name", formData.grandfatherName);
+      formDataWithFile.append("phone_number", formData.phoneNumber);
+      formDataWithFile.append("department_name", formData.department);
+      formDataWithFile.append("gender", formData.gender);
+      formDataWithFile.append("id_number", formData.id);
       // backend expects the uploaded file under `id_card` as binary
       if (formData.idFile) {
-        formDataWithFile.append("id_card", formData.idFile)
+        formDataWithFile.append("id_card", formData.idFile);
       }
-      formDataWithFile.append("email", formData.email)
-      formDataWithFile.append("password", formData.password)
-      const apiUrl = import.meta.env.VITE_API_URL ;
-      console.debug("Signing up to API URL:", apiUrl)
-      const response = await fetch(`${apiUrl}/signup`, {
+      formDataWithFile.append("email", formData.email);
+      formDataWithFile.append("password", formData.password);
+      const apiUrl = import.meta.env.VITE_API_URL;
+      console.debug("Signing up to API URL:", apiUrl);
+      const response = await fetch(`${apiUrl}/sign-up`, {
         method: "POST",
         body: formDataWithFile,
-      })
+        credentials: "include",
+      });
       console.log("Signup response:", response);
 
       // Try to parse JSON only when the server returns JSON.
-      const contentType = response.headers.get("content-type") || ""
-      let data = null
+      const contentType = response.headers.get("content-type") || "";
+      let data = null;
       if (contentType.includes("application/json")) {
         try {
-          // sanitize API URL from env (trim and remove trailing slash)
-          const rawApiUrl = import.meta.env.VITE_API_URL || ""
-          const apiUrl = rawApiUrl.toString().trim().replace(/\/+$/g, "")
-          const signupUrl = `${apiUrl}/signup`
-          console.debug("POST signup url:", signupUrl)
-
+          data = await response.json()
         } catch (err) {
-          console.error("Failed to parse JSON response", err)
+          console.error("Failed to parse JSON response", err);
         }
       } else {
         // Non-JSON response (likely an HTML error page). Read text for debugging.
-        const text = await response.text()
-        console.error("Non-JSON response from signup endpoint:", text)
+        const text = await response.text();
+        console.error("Non-JSON response from signup endpoint:", text);
         if (!response.ok) {
           setError(
-            `Sign up failed: ${response.status} ${response.statusText} - ${text.slice(0,200)}`,
-          )
-          return
+            `Sign up failed: ${response.status} ${
+              response.statusText
+            } - ${text.slice(0, 200)}`
+          );
+          return;
         }
       }
 
-      console.log("signup response status:", response.status, response.statusText, data)
+      console.log(
+        "signup response status:",
+        response.status,
+        response.statusText,
+        data
+      );
 
       if (!response.ok) {
-        setError((data && data.message) || `Sign up failed (${response.status})`)
-        console.log("Sign up error response:", data)
-        return
+        setError(
+          (data && data.message) || `Sign up failed (${response.status})`
+        );
+        console.log("Sign up error response:", data);
+        return;
       }
 
       // Store token and role
-      localStorage.setItem("token", data.token)
-      localStorage.setItem("userRole", data.role || "student")
+     
+      localStorage.setItem("userRole", data.data.user.role || "student");
 
       // Admin routing is temporarily disabled to focus on the student frontend build.
       // if (data.role === "admin") {
@@ -127,14 +132,14 @@ const SignUp = () => {
       //   navigate("/student/courses")
       // }
       // For now, route everyone to the student courses page
-      navigate("/student/courses")
+      navigate("/student/courses");
     } catch (err) {
-      setError("An error occurred. Please try again.")
-      console.error("Sign up error:", err)
+      setError("An error occurred. Please try again.");
+      console.error("Sign up error:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="auth-container">
@@ -144,15 +149,16 @@ const SignUp = () => {
           <div className="welcome-card">
             <div className="logo-circle">
               <span className="logo-text">
-                GIGI
+                GIBI
                 <br />
                 GUBAE
               </span>
             </div>
             <h2 className="welcome-title">Hello. Welcome</h2>
             <p className="welcome-message">
-              Create your account to get started. Stay connected, manage your profile, and access all available
-              services. Already have an account?{" "}
+              Create your account to get started. Stay connected, manage your
+              profile, and access all available services. Already have an
+              account?{" "}
               <span onClick={() => navigate("/")} className="welcome-link">
                 Sign in to continue.
               </span>
@@ -230,16 +236,42 @@ const SignUp = () => {
                   className="form-input"
                 >
                   <option value="">Select Department</option>
-                  <option value="engineering">Engineering</option>
-                  <option value="business">Business</option>
-                  <option value="arts">Arts</option>
-                  <option value="science">Science</option>
-                  <option value="medicine">Medicine</option>
+                  <option value="Electromechanical Engineering">
+                    Electromechanical Engineering
+                  </option>
+                  <option value="Chemical Engineering">
+                    Chemical Engineering
+                  </option>
+                  <option value="Software Engineering">
+                    Software Engineering
+                  </option>
+                  <option value="Mechanical Engineering">
+                    Mechanical Engineering
+                  </option>
+                  <option value="Electrical and Computer Engineering">
+                    Electrical and Computer Engineering
+                  </option>
+                  <option value="Civil Engineering">Civil Engineering</option>
+                  <option value="Architecture">Architecture</option>
+                  <option value="Applied Science">Applied Science</option>
+                  <option value="Freshman Engineering">
+                    Freshman Engineering
+                  </option>
+                  <option value="Biotechnology">Biotechnology</option>
+                  <option value="Industrial Chemistry">
+                    Industrial Chemistry
+                  </option>
                 </select>
               </div>
 
               <div className="form-group">
-                <select name="gender" value={formData.gender} onChange={handleChange} required className="form-input">
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  required
+                  className="form-input"
+                >
                   <option value="">Select Gender</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
@@ -314,7 +346,7 @@ const SignUp = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SignUp
+export default SignUp;

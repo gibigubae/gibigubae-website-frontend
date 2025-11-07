@@ -10,7 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-
+ const apiUrl = import.meta.env.VITE_API_URL;
   const handleLogin = async (e) => {
     e.preventDefault()
     setError("")
@@ -18,13 +18,13 @@ const Login = () => {
 
     try {
       // Replace with your actual API endpoint
-      const response = await fetch("https://gibigubae-website-backend.onrender.com/api/auth/login", {
+      const response = await fetch(`${apiUrl}/sign-in`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          "phone_or_email":email,
           password,
         }),
       })
@@ -37,8 +37,8 @@ const Login = () => {
       }
 
       // Store token and role
-      localStorage.setItem("token", data.token)
-      localStorage.setItem("userRole", data.role)
+      // localStorage.setItem("token", data.token)
+      localStorage.setItem("userRole", data.data.user.role)
 
       // Admin routing is temporarily disabled to focus on the student frontend build.
       // if (data.role === "admin") {
@@ -64,7 +64,7 @@ const Login = () => {
           <div className="welcome-card">
             <div className="logo-circle">
               <span className="logo-text">
-                GIGI
+                GIBI
                 <br />
                 GUBAE
               </span>
@@ -87,8 +87,8 @@ const Login = () => {
             <form onSubmit={handleLogin}>
               <div className="form-group">
                 <input
-                  type="email"
-                  placeholder="Email/Phone Number"
+                  type="text"
+                  placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
