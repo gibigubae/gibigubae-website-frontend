@@ -35,19 +35,18 @@ const Login = () => {
         setError(data.message || "Login failed")
         return
       }
-
+      const role = data.data.user.role;
       // Store token and role
       // localStorage.setItem("token", data.token)
-      localStorage.setItem("userRole", data.data.user.role)
+      localStorage.setItem("userRole", role)
 
       // Admin routing is temporarily disabled to focus on the student frontend build.
-      // if (data.role === "admin") {
-      //   navigate("/admin/courses")
-      // } else {
-      //   navigate("/student/courses")
-      // }
-      // For now, route everyone to the student courses page
-      navigate("/student/courses")
+      if (role === "admin" || role === "super_admin") {
+        navigate("/admin/courses")
+      } else {
+        navigate("/student/courses")
+      }
+
     } catch (err) {
       setError("An error occurred. Please try again.")
       console.error("Login error:", err)

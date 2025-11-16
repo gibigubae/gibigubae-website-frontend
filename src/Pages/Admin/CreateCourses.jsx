@@ -1,216 +1,203 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import "../../styles/CreateCourse.css"
-import AdminNavBar from "./AdminNavBar"
+import { useState } from "react";
+import "../../styles/CreateCourse.css";
+import AdminNavBar from "./AdminNavBar";
 
 const CreateCourses = () => {
   const [formData, setFormData] = useState({
-    courseName: "",
-    courseDescription: "",
-    courseStartDate: "",
-    courseEndDate: "",
-    enrollmentStartDate: "",
-    enrollmentEndDate: "",
-  })
-
-  const [errors, setErrors] = useState({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
+    course_name: "",
+    description: "",
+    start_date: "",
+    end_date: "",
+    enrollment_start_date: "",
+    enrollment_deadline: "",
+  });
+  const base_url = import.meta.env.VITE_API_URL;
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState(""); // <-- new state
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
-    // Clear error for this field when user starts typing
+    });
     if (errors[name]) {
       setErrors({
         ...errors,
         [name]: "",
-      })
+      });
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
+    if (!formData.course_name.trim()) newErrors.course_name = "Course name is required";
+    if (!formData.description.trim()) newErrors.description = "Course description is required";
+    else if (formData.description.length > 280) newErrors.description = "Description must be 280 characters or less";
+    if (!formData.start_date) newErrors.start_date = "Course start date is required";
+    if (!formData.end_date) newErrors.end_date = "Course end date is required";
+    else if (new Date(formData.end_date) <= new Date(formData.start_date))
+      newErrors.end_date = "End date must be after start date";
+    if (!formData.enrollment_start_date) newErrors.enrollment_start_date = "Enrollment start date is required";
+    if (!formData.enrollment_deadline) newErrors.enrollment_deadline = "Enrollment end date is required";
+    else if (new Date(formData.enrollment_deadline) <= new Date(formData.enrollment_start_date))
+      newErrors.enrollment_deadline = "Enrollment end date must be after start date";
 
-    if (!formData.courseName.trim()) {
-      newErrors.courseName = "Course name is required"
-    }
-
-    if (!formData.courseDescription.trim()) {
-      newErrors.courseDescription = "Course description is required"
-    } else if (formData.courseDescription.length > 280) {
-      newErrors.courseDescription = "Description must be 280 characters or less"
-    }
-
-    if (!formData.courseStartDate) {
-      newErrors.courseStartDate = "Course start date is required"
-    }
-
-    if (!formData.courseEndDate) {
-      newErrors.courseEndDate = "Course end date is required"
-    } else if (new Date(formData.courseEndDate) <= new Date(formData.courseStartDate)) {
-      newErrors.courseEndDate = "End date must be after start date"
-    }
-
-    if (!formData.enrollmentStartDate) {
-      newErrors.enrollmentStartDate = "Enrollment start date is required"
-    }
-
-    if (!formData.enrollmentEndDate) {
-      newErrors.enrollmentEndDate = "Enrollment end date is required"
-    } else if (new Date(formData.enrollmentEndDate) <= new Date(formData.enrollmentStartDate)) {
-      newErrors.enrollmentEndDate = "Enrollment end date must be after start date"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    if (!validateForm()) return;
 
-    if (!validateForm()) {
-      return
-    }
-
-    setIsSubmitting(true)
+    setIsSubmitting(true);
+    setSuccessMsg(""); // clear previous success
 
     try {
-      // TODO: Replace with actual API call to create course
-      console.log("[v0] Submitting course data:", formData)
+      console.log("[v0] Submitting course data:", formData);
 
-      // Simulated API call
-      // const response = await fetch('https://gibigubae-website-backend.onrender.com/api/courses', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // });
+      const response = await fetch(`${base_url}/courses`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+        credentials: "include",
+      });
 
-      // Mock success for now
-      alert("Course created successfully!")
+      const data = await response.json();
+      if (!data.success) {
+        setErrors({ submit: data.message || data.error || "Course Creation Failed" });
+        return;
+      }
+
+      // Show popup success message
+      setSuccessMsg("Course created successfully!");
+      setTimeout(() => setSuccessMsg(""), 3000); // hide after 3 seconds
+
       setFormData({
-        courseName: "",
-        courseDescription: "",
-        courseStartDate: "",
-        courseEndDate: "",
-        enrollmentStartDate: "",
-        enrollmentEndDate: "",
-      })
+        course_name: "",
+        description: "",
+        start_date: "",
+        end_date: "",
+        enrollment_start_date: "",
+        enrollment_deadline: "",
+      });
     } catch (error) {
-      console.error("[v0] Error creating course:", error)
-      setErrors({ submit: "Failed to create course. Please try again." })
+      console.error("[v0] Error creating course:", error);
+      setErrors({ submit: "Failed to create course. Please try again." });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  const charCount = formData.courseDescription.length
+  const charCount = formData.description.length;
 
   return (
     <>
-    <AdminNavBar />
-    <div className="create-course-container">
-      <div className="create-course-card">
-        <h1 className="create-course-title">Create Course</h1>
+      <AdminNavBar />
+      <div className="create-course-container">
+        <div className="create-course-card">
+          <h1 className="create-course-title">Create Course</h1>
 
-        {errors.submit && <div className="error-message">{errors.submit}</div>}
+          {/* Popup success message */}
+          {successMsg && <div className="success-popup">{successMsg}</div>}
 
-        <form onSubmit={handleSubmit} className="create-course-form">
-          {/* Course Name */}
-          <div className="form-group">
-            <label className="form-label">Course name</label>
-            <input
-              type="text"
-              name="courseName"
-              value={formData.courseName}
-              onChange={handleChange}
-              placeholder="e.g., Introduction to Product Design"
-              className={`form-input ${errors.courseName ? "input-error" : ""}`}
-            />
-            {errors.courseName && <span className="error-text">{errors.courseName}</span>}
-          </div>
+          {errors.submit && <div className="error-message">{errors.submit}</div>}
 
-          {/* Course Description */}
-          <div className="form-group">
-            <label className="form-label">Course description</label>
-            <textarea
-              name="courseDescription"
-              value={formData.courseDescription}
-              onChange={handleChange}
-              placeholder="Write a concise summary of the course content, learning outcomes, and prerequisites."
-              className={`form-textarea ${errors.courseDescription ? "input-error" : ""}`}
-              rows="4"
-            />
-            <div className="char-count">Keep it under 280 characters. ({charCount}/280)</div>
-            {errors.courseDescription && <span className="error-text">{errors.courseDescription}</span>}
-          </div>
-
-          {/* Date Fields Row 1 */}
-          <div className="form-row">
+          <form onSubmit={handleSubmit} className="create-course-form">
+            {/* Course Name */}
             <div className="form-group">
-              <label className="form-label">Course start date</label>
+              <label className="form-label">Course name</label>
               <input
-                type="date"
-                name="courseStartDate"
-                value={formData.courseStartDate}
+                type="text"
+                name="course_name"
+                value={formData.course_name}
                 onChange={handleChange}
-                className={`form-input ${errors.courseStartDate ? "input-error" : ""}`}
+                placeholder="e.g., Introduction to Product Design"
+                className={`form-input ${errors.course_name ? "input-error" : ""}`}
               />
-              {errors.courseStartDate && <span className="error-text">{errors.courseStartDate}</span>}
+              {errors.course_name && <span className="error-text">{errors.course_name}</span>}
             </div>
 
+            {/* Course Description */}
             <div className="form-group">
-              <label className="form-label">Course end date</label>
-              <input
-                type="date"
-                name="courseEndDate"
-                value={formData.courseEndDate}
+              <label className="form-label">Course description</label>
+              <textarea
+                name="description"
+                value={formData.description}
                 onChange={handleChange}
-                className={`form-input ${errors.courseEndDate ? "input-error" : ""}`}
+                placeholder="Write a concise summary of the course content, learning outcomes, and prerequisites."
+                className={`form-textarea ${errors.description ? "input-error" : ""}`}
+                rows="4"
               />
-              {errors.courseEndDate && <span className="error-text">{errors.courseEndDate}</span>}
-            </div>
-          </div>
-
-          {/* Date Fields Row 2 */}
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Enrollment start date</label>
-              <input
-                type="date"
-                name="enrollmentStartDate"
-                value={formData.enrollmentStartDate}
-                onChange={handleChange}
-                className={`form-input ${errors.enrollmentStartDate ? "input-error" : ""}`}
-              />
-              {errors.enrollmentStartDate && <span className="error-text">{errors.enrollmentStartDate}</span>}
+              <div className="char-count">Keep it under 280 characters. ({charCount}/280)</div>
+              {errors.description && <span className="error-text">{errors.description}</span>}
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Enrollment end date</label>
-              <input
-                type="date"
-                name="enrollmentEndDate"
-                value={formData.enrollmentEndDate}
-                onChange={handleChange}
-                className={`form-input ${errors.enrollmentEndDate ? "input-error" : ""}`}
-              />
-              {errors.enrollmentEndDate && <span className="error-text">{errors.enrollmentEndDate}</span>}
-            </div>
-          </div>
+            {/* Date Fields */}
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Course start date</label>
+                <input
+                  type="date"
+                  name="start_date"
+                  value={formData.start_date}
+                  onChange={handleChange}
+                  className={`form-input ${errors.start_date ? "input-error" : ""}`}
+                />
+                {errors.start_date && <span className="error-text">{errors.start_date}</span>}
+              </div>
 
-          <button type="submit" disabled={isSubmitting} className="create-course-button">
-            {isSubmitting ? "Creating course..." : "Create course"}
-          </button>
-        </form>
+              <div className="form-group">
+                <label className="form-label">Course end date</label>
+                <input
+                  type="date"
+                  name="end_date"
+                  value={formData.end_date}
+                  onChange={handleChange}
+                  className={`form-input ${errors.end_date ? "input-error" : ""}`}
+                />
+                {errors.end_date && <span className="error-text">{errors.end_date}</span>}
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Enrollment start date</label>
+                <input
+                  type="date"
+                  name="enrollment_start_date"
+                  value={formData.enrollment_start_date}
+                  onChange={handleChange}
+                  className={`form-input ${errors.enrollment_start_date ? "input-error" : ""}`}
+                />
+                {errors.enrollment_start_date && <span className="error-text">{errors.enrollment_start_date}</span>}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Enrollment end date</label>
+                <input
+                  type="date"
+                  name="enrollment_deadline"
+                  value={formData.enrollment_deadline}
+                  onChange={handleChange}
+                  className={`form-input ${errors.enrollment_deadline ? "input-error" : ""}`}
+                />
+                {errors.enrollment_deadline && <span className="error-text">{errors.enrollment_deadline}</span>}
+              </div>
+            </div>
+
+            <button type="submit" disabled={isSubmitting} className="create-course-button">
+              {isSubmitting ? "Creating course..." : "Create course"}
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
     </>
+  );
+};
 
-  )
-}
-
-export default CreateCourses
+export default CreateCourses;
