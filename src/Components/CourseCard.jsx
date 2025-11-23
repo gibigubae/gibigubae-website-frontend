@@ -18,11 +18,22 @@ const CourseCard = ({ course, onEdit, onView, userType = "student" }) => {
 
       {/* Action Buttons */}
       <div className="course-actions">
-        <button className="action-btn edit-btn" onClick={() => onEdit(course.id)} aria-label="Edit course" title="Edit">
+        <button
+          className="action-btn edit-btn"
+          onClick={() => onEdit(course.id)}
+          aria-label="Edit course"
+          title="Edit"
+        >
           <Edit2 size={18} />
           <span className="btn-text">Edit</span>
         </button>
-        <button className="action-btn view-btn" onClick={() => onView(course.id)} aria-label="View course" title="View">
+
+        <button
+          className="action-btn view-btn"
+          onClick={() => onView(course.id)}
+          aria-label="View course"
+          title="View"
+        >
           <Eye size={18} />
           <span className="btn-text">View</span>
         </button>

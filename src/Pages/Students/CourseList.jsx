@@ -1,122 +1,124 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom" // Import navigate hook
-import CourseCard from "../../Components/CourseCard"
-import "../../styles/CourseList.css"
-import StudentNavBar from "./StudentNavBar"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import CourseCard from "../../Components/CourseCard";
+import "../../styles/CourseList.css";
+import StudentNavBar from "./StudentNavBar";
 
 const CourseList = () => {
-  const navigate = useNavigate() // Initialize navigate hook
+  const navigate = useNavigate();
+  const base_url = import.meta.env.VITE_API_URL;
 
-  // Mock data - replace with API call
-  const [courses] = useState([
-    {
-      id: 1,
-      title: "Introduction to Product Design",
-      description: "Learn the fundamentals of product design. UI research, wireframing, and prototyping.",
-      status: "Current",
-    },
-    {
-      id: 2,
-      title: "Marketing Analytics Bootcamp",
-      description: "Hands-on course covering attribution, cohort analysis, experimentation, and advanced metrics.",
-      status: "Upcoming",
-    },
-    {
-      id: 3,
-      title: "Data Science with Python",
-      description: "From data wrangling to model deployment—build end-to-end projects using Python.",
-      status: "Current",
-    },
-    {
-      id: 4,
-      title: "Agile Project Management",
-      description: "Master Scrum, Kanban, and stakeholder communication with practical exercises.",
-      status: "Upcoming",
-    },
-    {
-      id: 5,
-      title: "Visual Communication Basics",
-      description: "Explore layout, typography, and color theory to create compelling visuals.",
-      status: "All",
-    },
-    {
-      id: 6,
-      title: "Cybersecurity Essentials",
-      description: "Threat modeling, networks security, and best practices to protect modern systems.",
-      status: "Current",
-    },
-  ])
+  const [courses, setCourses] = useState([]);
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [filterStatus, setFilterStatus] = useState("All")
-  const [searchTerm, setSearchTerm] = useState("")
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await fetch(`${base_url}/courses/student`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
 
-  // Filter courses based on status and search term
+        const formatted = data.data.map((course) => {
+          const now = new Date();
+          const start = new Date(course.start_date);
+          const end = new Date(course.end_date);
+
+          let status = "Current";
+          if (start > now) status = "Upcoming";
+          if (end < now) status = "Past";
+
+          return {
+            id: course.course_id, // <- must match backend
+            title: course.course_name,
+            description: course.description,
+            start_date: course.start_date,
+            end_date: course.end_date,
+            status,
+          };
+        });
+
+        setCourses(formatted);
+      } catch (err) {
+        console.error(err);
+        setError("Error fetching courses. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [base_url]);
+
   const filteredCourses = courses.filter((course) => {
-    const matchesStatus = filterStatus === "All" || course.status === filterStatus
+    const matchesStatus = filterStatus === "All" || course.status === filterStatus;
     const matchesSearch =
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.description.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
+      course.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
-  const handleEdit = (courseId) => {
-    console.log("Edit course:", courseId)
-  }
+const handleView = (courseId) => {
+  if (!courseId) return;
+  navigate(`/student/course/${courseId}`);
+};
 
-  const handleView = (courseId) => {
-    navigate(`/student/course/${courseId}`)
-  }
+  const handleEdit = () => alert("Students cannot edit courses.");
 
   return (
     <>
-    <StudentNavBar/>
-     <div className="course-list-container">
-      {/* Header */}
-      <div className="course-list-header">
-        <h1 className="page-title">Courses</h1>
-
-        {/* Search Bar */}
-        <div className="search-wrapper">
+      <StudentNavBar />
+      <div className="course-list-container">
+        <div className="course-list-header">
+          <h1 className="page-title">Courses</h1>
           <input
             type="text"
             placeholder="Search courses..."
-            className="search-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
           />
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="filter-tabs">
-          {["All", "Upcoming", "Current", "Past"].map((status) => (
-            <button
-              key={status}
-              className={`filter-tab ${filterStatus === status ? "active" : ""}`}
-              onClick={() => setFilterStatus(status)}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Courses Grid */}
-      <div className="courses-grid">
-        {filteredCourses.length > 0 ? (
-          filteredCourses.map((course) => (
-            <CourseCard key={course.id} course={course} onEdit={handleEdit} onView={handleView} userType="student" />
-          ))
-        ) : (
-          <div className="no-courses">
-            <p>No courses found matching your search.</p>
+          <div className="filter-tabs">
+            {["All", "Upcoming", "Current", "Past"].map((status) => (
+              <button
+                key={status}
+                className={`filter-tab ${filterStatus === status ? "active" : ""}`}
+                onClick={() => setFilterStatus(status)}
+              >
+                {status}
+              </button>
+            ))}
           </div>
+        </div>
+
+        {loading ? (
+          <p>Loading courses...</p>
+        ) : error ? (
+          <p className="error-message">{error}</p>
+        ) : filteredCourses.length > 0 ? (
+          <div className="courses-grid">
+            {filteredCourses.map((course) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                onView={handleView}
+                onEdit={handleEdit}
+                userType="student"
+              />
+            ))}
+          </div>
+        ) : (
+          <p>No courses found.</p>
         )}
       </div>
-    </div>
     </>
-  )
-}
+  );
+};
 
-export default CourseList
+export default CourseList;

@@ -27,6 +27,7 @@ const Login = () => {
           "phone_or_email":email,
           password,
         }),
+        credentials: "include",
       })
 
       const data = await response.json()
