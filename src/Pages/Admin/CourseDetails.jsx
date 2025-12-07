@@ -29,13 +29,12 @@ const CourseDetails = () => {
     const fetchCourseDetails = async () => {
       try {
         // Fetch all courses first
-        const courseRes = await fetch(`${base_url}/courses/${courseId}`, {
+        const courseRes = await fetch(`${base_url}/course/${courseId}`, {
           credentials: "include",
         });
         const courseData = await courseRes.json();
         if (!courseData.success)
           throw new Error(courseData.message || "Failed to fetch course");
-
         setCourse({
           id: courseData.data.id,
           title: courseData.data.course_name,
@@ -47,7 +46,7 @@ const CourseDetails = () => {
 
         // Fetch attendance for this course
         const attendanceRes = await fetch(
-          `${base_url}/attendance?courseId=${courseId}`,
+          `${base_url}/attendance/course/${courseId}`,
           {
             credentials: "include",
           }

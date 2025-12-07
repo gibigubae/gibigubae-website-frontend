@@ -19,7 +19,7 @@ const CourseLists = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await fetch(`${base_url}/courses`, {
+        const response = await fetch(`${base_url}/course`, {
           credentials: "include",
         });
         const data = await response.json();

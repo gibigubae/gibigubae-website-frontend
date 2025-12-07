@@ -24,7 +24,7 @@ const Login = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          "phone_or_email":email,
+          email,
           password,
         }),
         credentials: "include",
@@ -36,7 +36,8 @@ const Login = () => {
         setError(data.message || "Login failed")
         return
       }
-      const role = data.data.user.role;
+      // console.log("full response",data)
+      const role = data.data?.role;
       // Store token and role
       // localStorage.setItem("token", data.token)
       localStorage.setItem("userRole", role)
