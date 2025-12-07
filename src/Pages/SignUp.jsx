@@ -123,7 +123,7 @@ const SignUp = () => {
 
       // Store token and role
      
-      localStorage.setItem("userRole", data.data.user.role || "student");
+      localStorage.setItem("userRole", data.data.role || "student");
 
       // Admin routing is temporarily disabled to focus on the student frontend build.
       // if (data.role === "admin") {
