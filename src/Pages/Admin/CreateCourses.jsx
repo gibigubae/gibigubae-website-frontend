@@ -60,7 +60,7 @@ const CreateCourses = () => {
     try {
       console.log("[v0] Submitting course data:", formData);
 
-      const response = await fetch(`${base_url}/courses`, {
+      const response = await fetch(`${base_url}/course`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
