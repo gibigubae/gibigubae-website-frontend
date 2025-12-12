@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseCard from "../../Components/CourseCard";
@@ -19,7 +17,7 @@ const CourseList = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch(`${base_url}/courses/student`, {
+        const res = await fetch(`${base_url}/course/my`, {
           credentials: "include",
         });
         const data = await res.json();
@@ -35,7 +33,7 @@ const CourseList = () => {
           if (end < now) status = "Past";
 
           return {
-            id: course.course_id, // <- must match backend
+            id: course.course_id,
             title: course.course_name,
             description: course.description,
             start_date: course.start_date,
@@ -57,17 +55,18 @@ const CourseList = () => {
   }, [base_url]);
 
   const filteredCourses = courses.filter((course) => {
-    const matchesStatus = filterStatus === "All" || course.status === filterStatus;
+    const matchesStatus =
+      filterStatus === "All" || course.status === filterStatus;
     const matchesSearch =
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
-const handleView = (courseId) => {
-  if (!courseId) return;
-  navigate(`/student/course/${courseId}`);
-};
+  const handleView = (courseId) => {
+    if (!courseId) return;
+    navigate(`/student/course/${courseId}`);
+  };
 
   const handleEdit = () => alert("Students cannot edit courses.");
 
@@ -88,7 +87,9 @@ const handleView = (courseId) => {
             {["All", "Upcoming", "Current", "Past"].map((status) => (
               <button
                 key={status}
-                className={`filter-tab ${filterStatus === status ? "active" : ""}`}
+                className={`filter-tab ${
+                  filterStatus === status ? "active" : ""
+                }`}
                 onClick={() => setFilterStatus(status)}
               >
                 {status}
