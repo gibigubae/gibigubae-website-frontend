@@ -1,12 +1,16 @@
-"use client"
-import { Edit2, Eye } from "lucide-react"
-import "../styles/CourseCard.css"
+"use client";
+import { Edit2, Eye } from "lucide-react";
+import "../styles/CourseCard.css";
 
 const CourseCard = ({ course, onEdit, onView, userType = "student" }) => {
   return (
     <div className="course-card">
       {/* Status Badge */}
-      <div className={`course-status-badge status-${course.status?.toLowerCase() || "all"}`}>
+      <div
+        className={`course-status-badge status-${
+          course.status?.toLowerCase() || "all"
+        }`}
+      >
         {course.status || "All"}
       </div>
 
@@ -18,15 +22,17 @@ const CourseCard = ({ course, onEdit, onView, userType = "student" }) => {
 
       {/* Action Buttons */}
       <div className="course-actions">
-        <button
-          className="action-btn edit-btn"
-          onClick={() => onEdit(course.id)}
-          aria-label="Edit course"
-          title="Edit"
-        >
-          <Edit2 size={18} />
-          <span className="btn-text">Edit</span>
-        </button>
+        {userType !== "student" && (
+          <button
+            className="action-btn edit-btn"
+            onClick={() => onEdit(course.id)}
+            aria-label="Edit course"
+            title="Edit"
+          >
+            <Edit2 size={18} />
+            <span className="btn-text">Edit</span>
+          </button>
+        )}
 
         <button
           className="action-btn view-btn"
@@ -39,7 +45,7 @@ const CourseCard = ({ course, onEdit, onView, userType = "student" }) => {
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CourseCard
+export default CourseCard;

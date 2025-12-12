@@ -1,7 +1,6 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import QRCode from "react-qr-code";
 import {
   ChevronLeft,
   Clock,
@@ -23,12 +22,12 @@ const CourseDetails = () => {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showQRCode, setShowQRCode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        // Fetch all courses first
         const courseRes = await fetch(`${base_url}/course/${courseId}`, {
           credentials: "include",
         });
@@ -64,6 +63,7 @@ const CourseDetails = () => {
             hour: "2-digit",
             minute: "2-digit",
           }),
+          code: item.code,
           highlighted: item.status === "present",
         }));
 
@@ -77,8 +77,9 @@ const CourseDetails = () => {
     };
 
     fetchCourseDetails();
-  }, [courseId, base_url]);
+  }, [courseId, base_url, isModalOpen]);
 
+  const reversedAttendance = [...attendance].reverse();
   if (loading) return <p>Loading course details...</p>;
   if (error) return <p className="error-message">{error}</p>;
   if (!course) return <p>Course not found.</p>;
@@ -100,6 +101,8 @@ const CourseDetails = () => {
             <h1 className="course-title">{course.title}</h1>
             <p className="course-meta">By {course.instructor}</p>
           </div>
+
+          {/* edit button not working */}
           <button className="edit-button">
             <Edit2 size={20} />
             Edit
@@ -149,22 +152,67 @@ const CourseDetails = () => {
           </div>
 
           <div className="attendance-grid">
-            {attendance.map((att) => (
-              <div
-                key={att.id}
-                className={`attendance-card ${
-                  att.highlighted ? "highlighted" : ""
-                }`}
-              >
-                <div className="attendance-date">
-                  <span className="date-text">{att.date}</span>
+            {reversedAttendance.map((att, idx) => {
+              const isLatest = idx === 0; // latest attendance
+
+              return (
+                <div key={att.id}>
+                  {isLatest ? (
+                    <div
+                      className={`attendance-card ${
+                        att.highlighted ? "highlighted" : ""
+                      }`}
+                    >
+                      <button onClick={() => setShowQRCode(!showQRCode)}>
+                        <div className="attendance-date">
+                          <span className="date-text">{att.date}</span>
+                        </div>
+                        <div className="attendance-time">
+                          <Clock size={16} />
+                          <span>{att.time}</span>
+                        </div>
+                        <div>
+                          <span>code: {att.code}</span>
+                        </div>
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      className={`attendance-card ${
+                        att.highlighted ? "highlighted" : ""
+                      }`}
+                    >
+                      <div className="attendance-date">
+                        <span className="date-text">{att.date}</span>
+                      </div>
+                      <div className="attendance-time">
+                        <Clock size={16} />
+                        <span>{att.time}</span>
+                      </div>
+                      <div>
+                        <span>code: {att.code}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show QR code below the latest attendance card */}
+                  {isLatest && showQRCode && (
+                    <div
+                      className="qr-overlay"
+                      onClick={() => setShowQRCode(false)}
+                    >
+                      <div
+                        className="qr-popup"
+                        onClick={(e) => e.stopPropagation()} // prevent closing when clicking QR
+                      >
+                        <QRCode value={att.code} size={150} />
+                        <p className="qr-code-text">{att.code}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="attendance-time">
-                  <Clock size={16} />
-                  <span>{att.time}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -177,6 +225,7 @@ const CourseDetails = () => {
             <span className="btn-icon">+</span>
             Create Attendance
           </button>
+
           <button className="btn btn-secondary">
             <BarChart3 size={18} />
             Analytics

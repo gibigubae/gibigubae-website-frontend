@@ -185,6 +185,31 @@
   color: #6b21a8;
 }
 
+.qr-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4); /* semi-transparent background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* ensure it’s above everything */
+}
+
+.qr-popup {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.qr-code-text {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .course-detail-container {
