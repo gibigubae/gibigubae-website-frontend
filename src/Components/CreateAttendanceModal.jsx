@@ -1,45 +1,54 @@
-"use client"
+import { useState } from "react";
+import { X, Zap, AlertCircle, Check } from "lucide-react";
+import { useParams } from "react-router-dom";
 
-import { useState } from "react"
-import { X, Code, Zap, AlertCircle, Check } from "lucide-react"
-import "../styles/CreateAttendanceModal.css"
+import "../styles/CreateAttendanceModal.css";
 
 const CreateAttendanceModal = ({ isOpen, onClose, courseTitle }) => {
-  const [code, setCode] = useState("")
-  const [startTime, setStartTime] = useState(10)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
+  const [startTime, setStartTime] = useState(10);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const base_url = import.meta.env.VITE_API_URL;
+  const { courseId } = useParams();
 
-  const handleCodeChange = (e) => {
-    const value = e.target.value
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, "")
-      .slice(0, 6)
-    setCode(value)
-    setError("")
-  }
+  const handleCreateAttendance = async () => {
+    try {
+      const response = await fetch(`${base_url}/attendance/`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          courseId: courseId,
+          minutes: startTime,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Success:", data);
+
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        setStartTime(10);
+        onClose();
+      }, 2000);
+    } catch (error) {
+      console.error("Error:", error);
+      setError(error);
+    }
+  };
 
   const handleTimeChange = (e) => {
-    const value = Math.min(Math.max(Number.parseInt(e.target.value) || 0, 0), 120)
-    setStartTime(value)
-  }
+    const value = Math.min(
+      Math.max(Number.parseInt(e.target.value) || 0, 0),
+      120
+    );
+    setStartTime(value);
+  };
 
-  const handleSubmit = () => {
-    if (!code || code.length < 4) {
-      setError("Please enter a valid attendance code (4+ characters)")
-      return
-    }
-
-    setSuccess(true)
-    setTimeout(() => {
-      setSuccess(false)
-      setCode("")
-      setStartTime(10)
-      onClose()
-    }, 2000)
-  }
-
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -50,41 +59,26 @@ const CreateAttendanceModal = ({ isOpen, onClose, courseTitle }) => {
             <h2 className="modal-title">Create Attendance</h2>
             <p className="modal-subtitle">{courseTitle}</p>
           </div>
-          <button className="modal-close" onClick={onClose} aria-label="Close modal">
+          <button
+            className="modal-close"
+            onClick={onClose}
+            aria-label="Close modal"
+          >
             <X size={24} />
           </button>
         </div>
 
         {/* Body */}
         <div className="modal-body">
-          {/* Code Section */}
-          <div className="form-section">
-            <div className="section-header">
-              <Code size={20} className="section-icon" />
-              <div className="section-info">
-                <label className="section-label">Attendance Code</label>
-                <p className="section-description">Students will use this code to mark their attendance</p>
-              </div>
-            </div>
-
-            <input
-              type="text"
-              value={code}
-              onChange={handleCodeChange}
-              placeholder="e.g., MA-0825"
-              className="code-input"
-              maxLength={6}
-              autoFocus
-            />
-          </div>
-
           {/* Time Section */}
           <div className="form-section">
             <div className="section-header">
               <Zap size={20} className="section-icon" />
               <div className="section-info">
                 <label className="section-label">Starts In (minutes)</label>
-                <p className="section-description">Code expires after this duration</p>
+                <p className="section-description">
+                  Code expires after this duration
+                </p>
               </div>
             </div>
 
@@ -108,7 +102,8 @@ const CreateAttendanceModal = ({ isOpen, onClose, courseTitle }) => {
               <div className="qr-content">
                 <div className="qr-icon-large">⬜</div>
                 <p className="qr-text">
-                  When you create attendance, a code and QR will appear here for students to use.
+                  When you create attendance, a code and QR will appear here for
+                  students to use.
                 </p>
               </div>
             </div>
@@ -134,8 +129,8 @@ const CreateAttendanceModal = ({ isOpen, onClose, courseTitle }) => {
           <div className="info-note">
             <div className="note-icon">ℹ️</div>
             <p className="note-text">
-              After the countdown, students joining within 30 minutes are marked as late. After that, they are marked
-              absent.
+              After the countdown, students joining within 30 minutes are marked
+              as late. After that, they are marked absent.
             </p>
           </div>
         </div>
@@ -145,13 +140,13 @@ const CreateAttendanceModal = ({ isOpen, onClose, courseTitle }) => {
           <button className="btn btn-ghost" onClick={onClose}>
             Cancel
           </button>
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={!code}>
+          <button className="btn btn-primary" onClick={handleCreateAttendance}>
             Create Attendance
           </button>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CreateAttendanceModal
+export default CreateAttendanceModal;
