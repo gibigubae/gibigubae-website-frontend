@@ -40,8 +40,8 @@ const CourseCard = ({ course, onEdit, onView, userType = "student" }) => {
           aria-label="View course"
           title="View"
         >
-          <Eye size={18} />
           <span className="btn-text">View</span>
+          <Eye size={18} />
         </button>
       </div>
     </div>

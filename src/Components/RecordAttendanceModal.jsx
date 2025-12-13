@@ -12,7 +12,8 @@ const RecordAttendanceModal = ({ isOpen, onClose, onSubmit, date, time }) => {
   const canvasRef = useRef(null)
 
   const handleCodeChange = (e) => {
-    const value = e.target.value.replace(/\D/g, "").slice(0, 6)
+   const value = e.target.value.replace(/[^A-Z0-9]/g, "").slice(0, 6)
+
     setCode(value)
     setError("")
   }
@@ -50,8 +51,8 @@ const RecordAttendanceModal = ({ isOpen, onClose, onSubmit, date, time }) => {
   }
 
   const handleSubmit = () => {
-    if (!code || code.length < 6) {
-      setError("Please enter a valid 6-digit code")
+    if (!code || code.length < 4) {
+      setError("Please enter a valid code")
       return
     }
 

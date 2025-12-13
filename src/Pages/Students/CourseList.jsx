@@ -33,7 +33,7 @@ const CourseList = () => {
           if (end < now) status = "Past";
 
           return {
-            id: course.course_id,
+            id: course.id,
             title: course.course_name,
             description: course.description,
             start_date: course.start_date,
