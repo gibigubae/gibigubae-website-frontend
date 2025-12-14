@@ -1,84 +1,124 @@
 .attendance-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  border-radius: 8px;
-  min-height: 100px;
-  text-align: center;
-  font-weight: 500;
-  transition: transform 0.2s, box-shadow 0.2s;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	border-radius: 8px;
+	min-height: 100px;
+	text-align: center;
+	font-weight: 500;
+	transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .attendance-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  color: black;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	color: black;
 }
 
 .attendance-card.present {
-  background-color: #4ade80;
-  color: white;
+	background-color: #4ade80;
+	color: white;
+}
+.attendance-card.expired {
+	background-color: #6b7280; /* Gray for expired */
+	color: white;
+}
+.attendance-card.expired .attendance-icon::after {
+	/* Optional: Add a label to indicate it's expired */
+	content: "EXPIRED";
+	display: block;
+	font-size: 10px;
+	font-weight: 700;
+	margin-top: 4px;
+}
+
+/* Ensure only explicitly clickable cards have hover effects */
+.attendance-card:not(.clickable):hover {
+	transform: none;
+	box-shadow: none;
+	cursor: default;
+}
+
+/* Ensure 'pending' is still styled, but only clickable if latest */
+.attendance-card.pending {
+	background-color: #d4a574;
+	color: white;
+}
+
+/* Use the .clickable class for the hover effect */
+.attendance-card.clickable {
+	cursor: pointer;
+}
+.attendance-card.clickable:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 6px 16px rgba(212, 165, 116, 0.3); /* Keep hover effect for clickable */
 }
 
 .attendance-card.absent {
-  background-color: #ef4444;
-  color: white;
+	background-color: #ef4444;
+	color: white;
 }
-.attendance-card:hover {
-  color:gray;
+.attendance-card .expired-label {
+	margin-top: 6px;
+	font-size: 12px;
+	color: #d32f2f;
+	font-weight: 600;
 }
 
+.attendance-card:hover {
+	color: gray;
+}
 
 .attendance-card.pending {
-  background-color: #d4a574;
-  color: white;
+	background-color: #d4a574;
+	color: white;
 }
 
 /* Add clickable styling for pending cards */
 .attendance-card.clickable {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 .attendance-card.clickable:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(212, 165, 116, 0.3);
+	transform: translateY(-4px);
+	box-shadow: 0 6px 16px rgba(212, 165, 116, 0.3);
 }
 
 .attendance-icon {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 8px;
+	font-size: 24px;
+	font-weight: bold;
+	margin-bottom: 8px;
 }
 
 .attendance-date {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 4px;
+	font-size: 13px;
+	font-weight: 600;
+	margin-bottom: 4px;
 }
 
 .attendance-time {
-  font-size: 12px;
-  opacity: 0.9;
+	font-size: 12px;
+	opacity: 0.9;
 }
 
 /* Mobile Responsive */
 @media (max-width: 640px) {
-  .attendance-card {
-    padding: 12px;
-    min-height: 90px;
-  }
+	.attendance-card {
+		padding: 12px;
+		min-height: 90px;
+	}
 
-  .attendance-icon {
-    font-size: 20px;
-  }
+	.attendance-icon {
+		font-size: 20px;
+	}
 
-  .attendance-date {
-    font-size: 12px;
-  }
+	.attendance-date {
+		font-size: 12px;
+	}
 
-  .attendance-time {
-    font-size: 11px;
-  }
+	.attendance-time {
+		font-size: 11px;
+	}
 }
