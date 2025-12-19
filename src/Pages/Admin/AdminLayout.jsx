@@ -1,12 +1,12 @@
-import AdminNavBar from "./AdminNavBar"
+import AdminSidebar from "./AdminSidebar";
 
 const AdminLayout = ({ children }) => {
   return (
-    <div className="admin-layout">
-      <AdminNavBar />
-      <main className="admin-main">{children}</main>
-    </div>
-  )
-}
+    <>
+      <AdminSidebar />
+      <main style={{ marginLeft: "240px", padding: "20px" }}>{children}</main>
+    </>
+  );
+};
 
-export default AdminLayout
+export default AdminLayout;

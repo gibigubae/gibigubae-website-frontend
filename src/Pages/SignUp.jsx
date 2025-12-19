@@ -60,7 +60,6 @@ const SignUp = () => {
 
     try {
       const formDataWithFile = new FormData();
-      // Map client-side names to backend expected field names
       formDataWithFile.append("first_name", formData.firstName);
       formDataWithFile.append("father_name", formData.fatherName);
       formDataWithFile.append("grand_father_name", formData.grandfatherName);
@@ -68,7 +67,6 @@ const SignUp = () => {
       formDataWithFile.append("department_name", formData.department);
       formDataWithFile.append("gender", formData.gender);
       formDataWithFile.append("id_number", formData.id);
-      // backend expects the uploaded file under `id_card` as binary
       if (formData.idFile) {
         formDataWithFile.append("id_card", formData.idFile);
       }
@@ -83,17 +81,15 @@ const SignUp = () => {
       });
       console.log("Signup response:", response);
 
-      // Try to parse JSON only when the server returns JSON.
       const contentType = response.headers.get("content-type") || "";
       let data = null;
       if (contentType.includes("application/json")) {
         try {
-          data = await response.json()
+          data = await response.json();
         } catch (err) {
           console.error("Failed to parse JSON response", err);
         }
       } else {
-        // Non-JSON response (likely an HTML error page). Read text for debugging.
         const text = await response.text();
         console.error("Non-JSON response from signup endpoint:", text);
         if (!response.ok) {
@@ -122,7 +118,7 @@ const SignUp = () => {
       }
 
       // Store token and role
-     
+
       localStorage.setItem("userRole", data.data.role || "student");
 
       // Admin routing is temporarily disabled to focus on the student frontend build.

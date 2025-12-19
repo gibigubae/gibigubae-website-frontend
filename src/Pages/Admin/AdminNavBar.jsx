@@ -1,61 +1,58 @@
-"use client"
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import "./AdminNavBar.css"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/AdminNavBar.css";
 
-const AdminNavBar = () => {
-  const navigate = useNavigate()
-  const [open, setOpen] = useState(false)
+const AdminSidebar = () => {
+  const navigate = useNavigate();
+  const [collapsed, setCollapsed] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("userRole")
-    navigate("/")
-  }
+    localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
+    navigate("/");
+  };
 
   return (
-    <nav className="admin-navbar">
-      <div className="navbar-container">
-        <div className="navbar-logo">
-          <span className="logo-text">GIGI GUBAE - Admin</span>
-        </div>
+    <aside className={`admin-sidebar ${collapsed ? "collapsed" : ""}`}>
+      <div className="sidebar-header">
+        <span className="sidebar-title">{collapsed ? "GG" : "GIGI GUBAE"}</span>
 
-        {/* Hamburger for small screens */}
         <button
-          className={`hamburger-btn ${open ? "open" : ""}`}
-          aria-label="Toggle menu"
-          aria-expanded={open}
-          onClick={() => setOpen((s) => !s)}
+          className="collapse-btn"
+          onClick={() => setCollapsed((c) => !c)}
         >
-          <span className="hamburger-line" />
-          <span className="hamburger-line" />
-          <span className="hamburger-line" />
-        </button>
-
-        <ul className={`navbar-menu ${open ? "open" : ""}`}>
-          <li>
-            <a href="#" onClick={() => { setOpen(false); navigate("/admin/courses") }}>
-              Courses
-            </a>
-          </li>
-          <li>
-            <a href="#" onClick={() => { setOpen(false); navigate("/admin/create-course") }}>
-              Create Course
-            </a>
-          </li>
-          <li>
-            <a href="#" onClick={() => { setOpen(false); navigate("/admin/attendance") }}>
-              Mark Attendance
-            </a>
-          </li>
-        </ul>
-
-        <button className="logout-btn" onClick={handleLogout}>
-          Logout
+          ☰
         </button>
       </div>
-    </nav>
-  )
-}
 
-export default AdminNavBar
+      <ul className="sidebar-menu">
+        <li onClick={() => navigate("/admin/courses")}>
+          📘 {!collapsed && "Courses"}
+        </li>
+
+        <li onClick={() => navigate("/admin/create-course")}>
+          ➕ {!collapsed && "Create Course"}
+        </li>
+
+        <li onClick={() => navigate("/admin/attendance")}>
+          📝 {!collapsed && "Mark Attendance"}
+        </li>
+
+        {/* Easy to extend */}
+        {/* 
+        <li onClick={() => navigate("/admin/users")}>
+          👥 {!collapsed && "Users"}
+        </li>
+        */}
+      </ul>
+
+      <div className="sidebar-footer">
+        <button className="logout-btn" onClick={handleLogout}>
+          🚪 {!collapsed && "Logout"}
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+export default AdminSidebar;
