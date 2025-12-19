@@ -10,7 +10,9 @@
 /* Header Section */
 .course-list-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 16px;
 }
 
@@ -19,12 +21,14 @@
   font-weight: 700;
   color: #1a1a1a;
   margin: 0;
+  width: 100%;
 }
 
-/* Search Wrapper */
+/* Find this existing block and update it */
 .search-wrapper {
   position: relative;
-  width: 100%;
+  min-width: 0; /* Changed from 200px to 0 to prevent flexbox locking */
+  /* width: 100%;  <-- Ensure this line is here or inherited */
 }
 
 .search-input {
@@ -54,6 +58,7 @@
   overflow-x: auto;
   padding-bottom: 4px;
   -webkit-overflow-scrolling: touch;
+  flex-shrink: 0; /* Prevents tabs from being squashed by the search bar */
 }
 
 .filter-tab {
@@ -128,25 +133,40 @@
   }
 }
 
-/* Desktop: Two-row header layout */
+/* Desktop: Single row layout */
 @media (min-width: 1024px) {
   .course-list-header {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap; /* Keep single line */
     align-items: center;
-    gap: 24px;
+    gap: 16px; /* Reduced gap to save space */
+    justify-content: flex-start; /* Align items starting from left */
   }
 
+  /* 1. Title: Dynamic width, but doesn't take 'auto' margin anymore */
+  .page-title {
+    width: auto;
+    margin-right: 0; /* Remove margin-right: auto so it doesn't push others off */
+    flex-shrink: 0; /* Keep title readable */
+  }
+
+  /* 2. Search Wrapper: Flexible width */
   .search-wrapper {
-    max-width: none;
-    grid-column: 2;
-    order: 2;
+    margin: 0;
+    order: 0;
+    flex: 1 1 auto; /* Grow to fill space, Shrink if needed */
+    max-width: 300px; /* Don't get larger than 300px */
+    min-width: 150px; /* Don't shrink smaller than 150px */
   }
 
+  /* 3. Filter Tabs: Push to the end */
   .filter-tabs {
-    grid-column: 3;
-    order: 3;
-    gap: 12px;
+    flex-shrink: 0;
+    width: auto;
+    margin: 0;
+    order: 0;
+    margin-left: auto; /* Push filters to the far right */
   }
 }
 
