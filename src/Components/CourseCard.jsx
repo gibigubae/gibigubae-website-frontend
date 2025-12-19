@@ -1,8 +1,27 @@
-"use client";
-import { Edit2, Eye } from "lucide-react";
+import { Edit2, Eye, Trash2 } from "lucide-react";
+import { useState } from "react";
 import "../styles/CourseCard.css";
 
-const CourseCard = ({ course, onEdit, onView, userType = "student" }) => {
+const CourseCard = ({
+  course,
+  onEdit,
+  onDelete,
+  onView,
+  userType = "student",
+}) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteClick = async () => {
+    setIsDeleting(true);
+
+    try {
+      await onDelete(course.id);
+    } catch (error) {
+      console.error("Delete failed", error);
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="course-card">
       {/* Status Badge */}
@@ -23,15 +42,27 @@ const CourseCard = ({ course, onEdit, onView, userType = "student" }) => {
       {/* Action Buttons */}
       <div className="course-actions">
         {userType !== "student" && (
-          <button
-            className="action-btn edit-btn"
-            onClick={() => onEdit(course.id)}
-            aria-label="Edit course"
-            title="Edit"
-          >
-            <Edit2 size={18} />
-            <span className="btn-text">Edit</span>
-          </button>
+          <>
+            <button
+              className="action-btn edit-btn"
+              onClick={() => onEdit(course)}
+              aria-label="Edit course"
+              title="Edit"
+            >
+              <Edit2 size={18} />
+              <span className="btn-text">Edit</span>
+            </button>
+
+            <button
+              className="action-btn delete-btn"
+              onClick={handleDeleteClick}
+              aria-label="Delete course"
+              title="Delete"
+            >
+              {isDeleting ? <span className="spinner" /> : <Trash2 size={18} />}
+              <span className="btn-text">Delete</span>
+            </button>
+          </>
         )}
 
         <button

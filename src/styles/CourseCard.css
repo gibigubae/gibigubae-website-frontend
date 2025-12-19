@@ -10,6 +10,21 @@
   transition: box-shadow 0.3s ease;
 }
 
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+  border-top: 2px solid red;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .course-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -72,6 +87,15 @@
   display: flex;
   gap: 8px;
   margin-top: auto;
+}
+
+.delete-btn {
+  background-color: #ffe5e5;
+  color: #c62828;
+}
+
+.delete-btn:hover {
+  background-color: #ffcccc;
 }
 
 .action-btn {
