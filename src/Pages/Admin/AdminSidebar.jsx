@@ -1,0 +1,94 @@
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Menu,
+  BookOpen,
+  PlusCircle,
+  Users,
+  GraduationCap,
+  LogOut,
+} from "lucide-react";
+import "../../styles/AdminSidebar.css";
+
+const AdminSidebar = ({ collapsed, setCollapsed }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userRole");
+    navigate("/");
+  };
+
+  // Helper to check active state
+  const isActive = (path) => location.pathname === path;
+
+  return (
+    <aside className={`admin-sidebar ${collapsed ? "collapsed" : ""}`}>
+      {/* Header */}
+      <div className="sidebar-header">
+        {!collapsed && <span className="sidebar-title">GIGI GUBAE</span>}
+
+        <button
+          className="collapse-btn"
+          onClick={() => setCollapsed(!collapsed)}
+          title={collapsed ? "Expand" : "Collapse"}
+        >
+          <Menu size={24} />
+        </button>
+      </div>
+
+      {/* Menu */}
+      <ul className="sidebar-menu">
+        <li
+          onClick={() => navigate("/admin/courses")}
+          className={isActive("/admin/courses") ? "active" : ""}
+          title={collapsed ? "Courses" : ""}
+        >
+          <BookOpen size={20} />
+          {!collapsed && <span>Courses</span>}
+        </li>
+
+        <li
+          onClick={() => navigate("/admin/create-course")}
+          className={isActive("/admin/create-course") ? "active" : ""}
+          title={collapsed ? "Create Course" : ""}
+        >
+          <PlusCircle size={20} />
+          {!collapsed && <span>Create Course</span>}
+        </li>
+
+        <li
+          onClick={() => navigate("/admin/student-management")}
+          className={isActive("/admin/student-management") ? "active" : ""}
+          title={collapsed ? "Student Management" : ""}
+        >
+          <Users size={20} />
+          {!collapsed && <span>Student Management</span>}
+        </li>
+
+        <li
+          onClick={() => navigate("/admin/Enroll-students")}
+          className={isActive("/admin/Enroll-students") ? "active" : ""}
+          title={collapsed ? "Enroll Students" : ""}
+        >
+          <GraduationCap size={20} />
+          {!collapsed && <span>Enroll Students</span>}
+        </li>
+      </ul>
+
+      {/* Footer */}
+      <div className="sidebar-footer">
+        <button
+          className="logout-btn"
+          onClick={handleLogout}
+          title={collapsed ? "Logout" : ""}
+        >
+          <LogOut size={20} />
+          {!collapsed && <span>Logout</span>}
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+export default AdminSidebar;

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import "../../styles/CreateCourse.css";
-import AdminNavBar from "./AdminNavBar";
 
 const CreateCourses = () => {
   const [formData, setFormData] = useState({
@@ -107,7 +106,6 @@ const CreateCourses = () => {
 
   return (
     <>
-      <AdminNavBar />
       <div className="create-course-container">
         <div className="create-course-card">
           <h1 className="create-course-title">Create Course</h1>

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseCard from "../../Components/CourseCard";
 import "../../styles/CourseList.css";
-import AdminNavBar from "./AdminNavBar";
 
 const CourseLists = () => {
   const navigate = useNavigate();
@@ -184,7 +183,6 @@ const CourseLists = () => {
 
   return (
     <>
-      <AdminNavBar />
       <div className="course-list-container">
         <div className="course-list-header">
           <h1 className="page-title">Courses</h1>

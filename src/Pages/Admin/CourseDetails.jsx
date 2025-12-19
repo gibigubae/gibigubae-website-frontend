@@ -13,7 +13,6 @@ import {
 import CreateAttendanceModal from "../../Components/CreateAttendanceModal";
 import AttendanceTable from "../../Components/AttendanceTable"; // Import Table
 import "../../styles/CourseDetails.css";
-import AdminNavBar from "./AdminNavBar";
 
 const CourseDetails = () => {
   const { courseId } = useParams();
@@ -100,7 +99,6 @@ const CourseDetails = () => {
 
   return (
     <>
-      <AdminNavBar />
       <div className="course-details-container">
         {/* Header Section */}
         <div className="details-header">
