@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMyCourses } from "../../hooks/useCourses";
 import CourseCard from "../../Components/CourseCard";
 import "../../styles/CourseList.css";
 import LoadingPage from "../../Components/LoadingPage";
@@ -7,53 +8,34 @@ import ErrorPage from "../../Components/ErrorPage";
 
 const CourseList = () => {
   const navigate = useNavigate();
-  const base_url = import.meta.env.VITE_API_URL;
 
-  const [courses, setCourses] = useState([]);
+  // Use React Query hook
+  const { data, isLoading, error, isError } = useMyCourses();
+
   const [filterStatus, setFilterStatus] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const res = await fetch(`${base_url}/course/my`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
+  // Transform API data
+  const courses = data?.success
+    ? data.data.map((course) => {
+        const now = new Date();
+        const start = new Date(course.start_date);
+        const end = new Date(course.end_date);
 
-        const formatted = data.data.map((course) => {
-          const now = new Date();
-          const start = new Date(course.start_date);
-          const end = new Date(course.end_date);
+        let status = "Current";
+        if (start > now) status = "Upcoming";
+        if (end < now) status = "Past";
 
-          let status = "Current";
-          if (start > now) status = "Upcoming";
-          if (end < now) status = "Past";
-
-          return {
-            id: course.id,
-            title: course.course_name,
-            description: course.description,
-            start_date: course.start_date,
-            end_date: course.end_date,
-            status,
-          };
-        });
-
-        setCourses(formatted);
-      } catch (err) {
-        console.error(err);
-        setError("Error fetching courses. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourses();
-  }, [base_url]);
+        return {
+          id: course.id,
+          title: course.course_name,
+          description: course.description,
+          start_date: course.start_date,
+          end_date: course.end_date,
+          status,
+        };
+      })
+    : [];
 
   const filteredCourses = courses.filter((course) => {
     const matchesStatus =
@@ -98,12 +80,12 @@ const CourseList = () => {
           </div>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <LoadingPage message="Loading courses..." />
-        ) : error ? (
+        ) : isError ? (
           <ErrorPage
             title="Failed to Load Courses"
-            message={error}
+            message={error?.response?.data?.message || error?.message || "Failed to load courses"}
             onRetry={() => window.location.reload()}
           />
         ) : filteredCourses.length > 0 ? (

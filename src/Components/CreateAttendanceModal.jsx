@@ -1,55 +1,44 @@
 import { useState } from "react";
 import { X, Zap, AlertCircle, Check } from "lucide-react";
 import { useParams } from "react-router-dom";
+import { useCreateAttendance } from "../hooks/useAttendance";
 import "../styles/CreateAttendanceModal.css";
 
 const CreateAttendanceModal = ({ isOpen, onClose, onSuccess, courseTitle }) => {
   const [startTime, setStartTime] = useState(10);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  const base_url = import.meta.env.VITE_API_URL;
   const { courseId } = useParams();
+  
+  // Use React Query mutation
+  const createAttendanceMutation = useCreateAttendance();
 
   const handleCreateAttendance = async () => {
     setError("");
-    setLoading(true);
 
-    try {
-      const response = await fetch(`${base_url}/attendance/`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
+    createAttendanceMutation.mutate(
+      {
+        courseId: courseId,
+        minutes: startTime,
+      },
+      {
+        onSuccess: () => {
+          setSuccess(true);
+          if (onSuccess) onSuccess();
+
+          setTimeout(() => {
+            setSuccess(false);
+            setStartTime(10);
+            onClose();
+          }, 1500);
         },
-        body: JSON.stringify({
-          courseId: courseId,
-          minutes: startTime,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.message || "Failed to create attendance");
+        onError: (err) => {
+          console.error("Error:", err);
+          setError(err?.response?.data?.message || err?.message || "An error occurred");
+        },
       }
-
-      setSuccess(true);
-
-      if (onSuccess) onSuccess();
-
-      setTimeout(() => {
-        setSuccess(false);
-        setStartTime(10);
-        setLoading(false);
-        onClose();
-      }, 1500);
-    } catch (err) {
-      console.error("Error:", err);
-      setError(err.message || "An error occurred");
-      setLoading(false);
-    }
+    );
   };
 
   const handleTimeChange = (e) => {
@@ -129,9 +118,9 @@ const CreateAttendanceModal = ({ isOpen, onClose, onSuccess, courseTitle }) => {
           <button
             className="btn btn-primary"
             onClick={handleCreateAttendance}
-            disabled={loading || success}
+            disabled={createAttendanceMutation.isPending || success}
           >
-            {loading ? "Creating..." : "Create Attendance"}
+            {createAttendanceMutation.isPending ? "Creating..." : "Create Attendance"}
           </button>
         </div>
       </div>

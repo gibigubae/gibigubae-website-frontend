@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useCourse } from "../../hooks/useCourses";
+import { useStudentAttendance, useMarkAttendanceStudent } from "../../hooks/useAttendance";
 import AttendanceCard from "../../Components/AttendanceCard";
 import RecordAttendanceModal from "../../Components/RecordAttendanceModal";
 import "../../styles/CourseDetail.css";
@@ -9,58 +11,36 @@ import ErrorPage from "../../Components/ErrorPage";
 const CourseDetail = () => {
   const { id: courseId } = useParams();
   const navigate = useNavigate();
-  const base_url = import.meta.env.VITE_API_URL;
 
   const [viewMode, setViewMode] = useState("cards");
-  const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [selectedAttendance, setSelectedAttendance] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Changed to false initially
-  const [course, setCourse] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!courseId) return;
+  // Use React Query hooks for parallel data fetching
+  const { data: courseData, isLoading: courseLoading, error: courseError } = useCourse(courseId);
+  const { data: attendanceData, isLoading: attendanceLoading, error: attendanceError } = useStudentAttendance(courseId);
+  const markAttendanceMutation = useMarkAttendanceStudent();
 
-    const fetchData = async () => {
-      try {
-        const [attRes, courseRes] = await Promise.all([
-          fetch(`${base_url}/attendance/student/course/${courseId}`, {
-            credentials: "include",
-          }),
-          fetch(`${base_url}/course/${courseId}`, {
-            credentials: "include",
-          }),
-        ]);
+  // Combined loading and error states
+  const isLoading = courseLoading || attendanceLoading;
+  const error = courseError || attendanceError;
 
-        const attData = await attRes.json();
-        const courseData = await courseRes.json();
-
-        if (!attData.success) throw new Error("Failed to fetch attendance");
-        if (!courseData.success) throw new Error("Failed to fetch course");
-
+  // Transform attendance data
+  const attendanceRecords = attendanceData?.success
+    ? (() => {
         const now = new Date();
-
-        // --- FIXED MAPPING WITH EXPIRATION LOGIC ---
-        const formatted = attData.data
+        return attendanceData.data
           .map((rec) => {
             const rawDate = rec.attendance.date;
-
-            // 1. Get the official start date/time (assuming rawDate is an ISO string or similar)
             const startDate = new Date(rawDate);
+            const endDate = new Date(startDate.getTime() + 16* 60000); // 16 minutes
 
-            // 2. Calculate the End Date: Start Date + 30 Minutes
-            const endDate = new Date(startDate.getTime() + 30 * 60000); // 30 minutes * 60 seconds * 1000 milliseconds
-
-            // 3. Format times (using a standard formatter for HH:MM)
             const timeOptions = {
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,
             };
-            const timeStart = startDate.toLocaleTimeString(
-              "en-US",
-              timeOptions,
-            );
+            const timeStart = startDate.toLocaleTimeString("en-US", timeOptions);
             const timeEnd = endDate.toLocaleTimeString("en-US", timeOptions);
 
             let status = "";
@@ -69,10 +49,8 @@ const CourseDetail = () => {
             } else if (rec.present === false) {
               status = "absent";
             } else if (endDate < now) {
-              // NEW LOGIC: If present is null AND the session has ended, mark as expired/absent
               status = "expired";
             } else {
-              // Session is ongoing or hasn't started, and attendance is not yet marked
               status = "pending";
             }
 
@@ -86,43 +64,35 @@ const CourseDetail = () => {
               }),
               timeStart: timeStart,
               timeEnd: timeEnd,
-              status: status, // New status can be 'present', 'absent', 'pending', or 'expired'
+              status: status,
               code: rec.attendance.code,
             };
           })
           .sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
+      })()
+    : [];
 
-        setAttendanceRecords(formatted);
-        setCourse(courseData.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const course = courseData?.success ? courseData.data : null;
 
-    fetchData();
-  }, [base_url, courseId]);
-
-  if (loading) return <LoadingPage message="Loading course..." />;
-  if (!course)
+  if (isLoading) return <LoadingPage message="Loading course..." />;
+  if (error || !course)
     return (
       <ErrorPage
-        title="Course Not Found"
-        message="The requested course could not be found."
+        title="Error Loading Course"
+        message={error?.response?.data?.message || error?.message || "Failed to load course"}
       />
     );
 
-  // Find the latest attendance record that is NOT 'present' and NOT 'expired'
-  // This assumes the latest record in the sorted array is the one to check.
-  const latestActiveRecord = attendanceRecords
-    .slice()
-    .reverse()
-    .find((rec) => ["pending", "absent"].includes(rec.status));
+
+  // Get the most recent attendance record (the last one in the array after sorting)
+  const mostRecentRecord = attendanceRecords[attendanceRecords.length - 1];
+  
+  // Only make it clickable if the student is NOT present on it
+  const isClickable = mostRecentRecord && mostRecentRecord.status !== "present";
 
   const handlePendingClick = (record) => {
-    // Only allow clicking on the latestActiveRecord
-    if (!latestActiveRecord || record.id !== latestActiveRecord.id) return;
+    // Only allow clicking on the most recent record if student is not present
+    if (!isClickable || record.id !== mostRecentRecord.id) return;
 
     setSelectedAttendance(record);
     setIsModalOpen(true);
@@ -131,39 +101,21 @@ const CourseDetail = () => {
   const handleAttendanceSubmit = async (code) => {
     if (!selectedAttendance) return;
 
-    // This is where you would call the API to mark attendance
-    try {
-      const res = await fetch(`${base_url}/attendance/mark/student`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          attendanceId: selectedAttendance.id,
-          code,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        // Update the status of the attendance record in state to 'present'
-        setAttendanceRecords((prev) =>
-          prev.map((rec) =>
-            rec.id === selectedAttendance.id
-              ? // Assuming API returns a status in data.data.status, otherwise hardcode 'present'
-                { ...rec, status: data.data.status || "present" }
-              : rec,
-          ),
-        );
-        // The modal will close after the success message in RecordAttendanceModal.jsx
-      } else {
-        // Handle API error/wrong code submission
-        alert(`Error: ${data.message || "Invalid code or system error."}`);
+    markAttendanceMutation.mutate(
+      {
+        attendanceId: selectedAttendance.id,
+        code,
+      },
+      {
+        onSuccess: () => {
+          // The modal will close after success
+          // React Query automatically refetches the attendance data
+        },
+        onError: (error) => {
+          alert(`Error: ${error?.response?.data?.message || error?.message || "Invalid code or system error."}`);
+        },
       }
-    } catch (err) {
-      console.error(err);
-      alert("An unexpected error occurred while marking attendance.");
-    }
+    );
   };
 
   return (
@@ -206,8 +158,8 @@ const CourseDetail = () => {
                   timeStart={rec.timeStart}
                   timeEnd={rec.timeEnd}
                   status={rec.status}
-                  // Make clickable only if it's the latest active record
-                  clickable={rec.id === latestActiveRecord?.id}
+                  // Make clickable only if it's the most recent record and student is not present
+                  clickable={isClickable && rec.id === mostRecentRecord?.id}
                   onPendingClick={() => handlePendingClick(rec)}
                 />
               ))}
@@ -227,12 +179,12 @@ const CourseDetail = () => {
                     key={rec.id}
                     // Added onClick for table view
                     onClick={
-                      rec.id === latestActiveRecord?.id
+                      isClickable && rec.id === mostRecentRecord?.id
                         ? () => handlePendingClick(rec)
                         : undefined
                     }
                     style={
-                      rec.id === latestActiveRecord?.id
+                      isClickable && rec.id === mostRecentRecord?.id
                         ? {
                             cursor: "pointer",
                             fontWeight: "bold",

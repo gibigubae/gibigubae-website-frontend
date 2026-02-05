@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSignup } from "../hooks/useAuth";
 import "./Auth.css";
 import ErrorPage from "../Components/ErrorPage";
 
@@ -23,8 +24,15 @@ const SignUp = () => {
     password: "",
   });
 
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [validationError, setValidationError] = useState("");
+
+  // Use React Query mutation hook for signup
+  const { mutate: signup, isPending, error, isError } = useSignup({
+    onSuccess: (data) => {
+      localStorage.setItem("userRole", data?.data?.role || "student");
+      navigate("/student/courses");
+    },
+  });
 
   // Clear any stale role when the signup page mounts
   useEffect(() => {
@@ -48,9 +56,9 @@ const SignUp = () => {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    setError("");
+    setValidationError("");
 
-    // 2. Updated Validation to check required fields
+    // Validation to check required fields
     if (
       !formData.firstName ||
       !formData.fatherName ||
@@ -66,75 +74,32 @@ const SignUp = () => {
       !formData.email ||
       !formData.password
     ) {
-      setError("Please fill in all required fields");
+      setValidationError("Please fill in all required fields");
       return;
     }
 
-    setLoading(true);
+    // Prepare FormData
+    const formDataWithFile = new FormData();
+    formDataWithFile.append("first_name", formData.firstName);
+    formDataWithFile.append("father_name", formData.fatherName);
+    formDataWithFile.append("grand_father_name", formData.grandfatherName);
+    formDataWithFile.append("christian_name", formData.christianName);
+    formDataWithFile.append("phone_number", formData.phoneNumber);
+    formDataWithFile.append("department", formData.department);
+    formDataWithFile.append("year", formData.year);
+    formDataWithFile.append("dorm_block", formData.dormBlock);
+    formDataWithFile.append("room_number", formData.roomNumber);
+    formDataWithFile.append("gender", formData.gender);
+    formDataWithFile.append("id_number", formData.id);
+    formDataWithFile.append("email", formData.email);
+    formDataWithFile.append("password", formData.password);
 
-    try {
-      const formDataWithFile = new FormData();
-      formDataWithFile.append("first_name", formData.firstName);
-      formDataWithFile.append("father_name", formData.fatherName);
-      formDataWithFile.append("grand_father_name", formData.grandfatherName);
-      formDataWithFile.append("christian_name", formData.christianName);
-      formDataWithFile.append("phone_number", formData.phoneNumber);
-      formDataWithFile.append("department", formData.department);
-      formDataWithFile.append("year", formData.year);
-      formDataWithFile.append("dorm_block", formData.dormBlock);
-      formDataWithFile.append("room_number", formData.roomNumber);
-      formDataWithFile.append("gender", formData.gender);
-      formDataWithFile.append("id_number", formData.id);
-      formDataWithFile.append("email", formData.email);
-      formDataWithFile.append("password", formData.password);
-
-      if (formData.idFile) {
-        formDataWithFile.append("id_card", formData.idFile);
-      }
-
-      const apiUrl = import.meta.env.VITE_API_URL;
-      console.debug("Signing up to API URL:", apiUrl);
-
-      const response = await fetch(`${apiUrl}/sign-up`, {
-        method: "POST",
-        body: formDataWithFile,
-        credentials: "include",
-      });
-
-      const contentType = response.headers.get("content-type") || "";
-      let data = null;
-
-      if (contentType.includes("application/json")) {
-        try {
-          data = await response.json();
-        } catch (err) {
-          console.error("Failed to parse JSON response", err);
-        }
-      } else {
-        const text = await response.text();
-        if (!response.ok) {
-          setError(
-            `Sign up failed: ${response.status} - ${text.slice(0, 200)}`,
-          );
-          return;
-        }
-      }
-
-      if (!response.ok) {
-        setError(
-          (data && data.message) || `Sign up failed (${response.status})`,
-        );
-        return;
-      }
-
-      localStorage.setItem("userRole", data?.data?.role || "student");
-      navigate("/student/courses");
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-      console.error("Sign up error:", err);
-    } finally {
-      setLoading(false);
+    if (formData.idFile) {
+      formDataWithFile.append("id_card", formData.idFile);
     }
+
+    // Call the signup mutation
+    signup(formDataWithFile);
   };
 
   return (
@@ -167,8 +132,16 @@ const SignUp = () => {
           <div className="auth-form">
             <h1 className="auth-title">Create your account</h1>
 
-            {error && (
-              <ErrorPage compact title="Registration Error" message={error} />
+            {validationError && (
+              <ErrorPage compact title="Validation Error" message={validationError} />
+            )}
+
+            {isError && (
+              <ErrorPage
+                compact
+                title="Registration Error"
+                message={error?.response?.data?.message || error?.message || "Registration failed"}
+              />
             )}
 
             <form onSubmit={handleSignUp}>
@@ -385,9 +358,9 @@ const SignUp = () => {
                 />
               </div>
 
-              <button type="submit" disabled={loading} className="auth-button">
-                {loading ? "Registering..." : "Register"}
-                {!loading && <span className="button-arrow">→</span>}
+              <button type="submit" disabled={isPending} className="auth-button">
+                {isPending ? "Registering..." : "Register"}
+                {!isPending && <span className="button-arrow">→</span>}
               </button>
             </form>
 

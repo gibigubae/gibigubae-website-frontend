@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Search,
   ChevronRight,
@@ -7,73 +7,31 @@ import {
   CheckCircle,
   Trash2,
 } from "lucide-react";
+import { useCourses } from "../../hooks/useCourses";
+import { useStudents } from "../../hooks/useStudents";
+import { useEnrolledStudents, useEnrollStudent, useUnenrollStudent } from "../../hooks/useEnrollment";
 import "../../styles/EnrollmentManager.css";
 import LoadingPage from "../../Components/LoadingPage";
 
 const EnrollmentManager = () => {
-  const base_url = import.meta.env.VITE_API_URL;
-
-  // Data States
-  const [courses, setCourses] = useState([]);
-  const [allStudents, setAllStudents] = useState([]); // Master list
-  const [enrolledStudents, setEnrolledStudents] = useState([]); // Students in selected course
-
   // UI States
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [enrollLoading, setEnrollLoading] = useState(false);
 
-  // 1. Initial Fetch: Get All Courses and All Students
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const [courseRes, studentRes] = await Promise.all([
-          fetch(`${base_url}/course/`, { credentials: "include" }),
-          fetch(`${base_url}/student/all`, { credentials: "include" }),
-        ]);
+  // Use React Query hooks
+  const { data: coursesData, isLoading: coursesLoading } = useCourses();
+  const { data: studentsData, isLoading: studentsLoading } = useStudents();
+  const { data: enrolledData, refetch: refetchEnrolled } = useEnrolledStudents(selectedCourseId);
+  
+  const enrollMutation = useEnrollStudent();
+  const unenrollMutation = useUnenrollStudent();
 
-        const courseData = await courseRes.json();
-        const studentData = await studentRes.json();
+  const isLoading = coursesLoading || studentsLoading;
 
-        if (courseData.success) setCourses(courseData.data);
-        if (studentData.success) setAllStudents(studentData.data);
-      } catch (error) {
-        console.error("Error fetching initial data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, [base_url]);
-
-  // 2. Fetch Enrolled Students when Course Changes
-  useEffect(() => {
-    if (!selectedCourseId) {
-      setEnrolledStudents([]);
-      return;
-    }
-
-    const fetchEnrolled = async () => {
-      try {
-        const response = await fetch(
-          `${base_url}/course/students/${selectedCourseId}`,
-          {
-            credentials: "include",
-          },
-        );
-        const data = await response.json();
-        if (data.success) {
-          setEnrolledStudents(data.students || []);
-        }
-      } catch (error) {
-        console.error("Error fetching enrolled students:", error);
-      }
-    };
-
-    fetchEnrolled();
-  }, [selectedCourseId, base_url]);
+  // Transform data
+  const courses = coursesData?.success ? coursesData.data : [];
+  const allStudents = studentsData?.success ? studentsData.data : [];
+  const enrolledStudents = enrolledData?.success ? enrolledData.students : [];
 
   // 3. Calculate Available Students (All Students - Enrolled Students)
   // Also applies Search Filter
@@ -97,68 +55,40 @@ const EnrollmentManager = () => {
 
   const { available, enrolled } = getFilteredLists();
 
-  // 4. Handle Enrollment Action
+  // Handle Enrollment Action
   const handleEnroll = async (student) => {
-    setEnrollLoading(true);
-    try {
-      const response = await fetch(`${base_url}/enrollment/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          studentId: student.id,
-          courseId: parseInt(selectedCourseId),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Optimistically update UI: Move student from Available to Enrolled
-        setEnrolledStudents((prev) => [...prev, student]);
-      } else {
-        alert(data.message || "Enrollment failed");
-      }
-    } catch (error) {
-      console.error("Enrollment error:", error);
-      alert("Failed to connect to server");
-    } finally {
-      setEnrollLoading(false);
-    }
+    enrollMutation.mutate({
+      studentId: student.id,
+      courseId: parseInt(selectedCourseId),
+    }, {
+      onSuccess: () => {
+        // Manually refetch to ensure UI updates
+        refetchEnrolled();
+      },
+      onError: (error) => {
+        alert(error?.response?.data?.message || error?.message || "Enrollment failed");
+      },
+    });
   };
 
   const handleUnenroll = async (studentId) => {
-    // 1. Confirmation
     const confirmed = window.confirm(
       "Are you sure you want to remove this student from the course?",
     );
     if (!confirmed) return;
 
-    try {
-      // 2. API Call
-      const response = await fetch(`${base_url}/enrollment/`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          studentId: studentId,
-          courseId: parseInt(selectedCourseId),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // 3. UI Update: Remove from enrolled list
-        // (This automatically moves them back to 'Available' because of the logic in getFilteredLists)
-        setEnrolledStudents((prev) => prev.filter((s) => s.id !== studentId));
-      } else {
-        alert(data.message || "Failed to remove enrollment");
-      }
-    } catch (error) {
-      console.error("Unenroll error:", error);
-      alert("Error removing student.");
-    }
+    unenrollMutation.mutate({
+      studentId: studentId,
+      courseId: parseInt(selectedCourseId),
+    }, {
+      onSuccess: () => {
+        // Manually refetch to ensure UI updates
+        refetchEnrolled();
+      },
+      onError: (error) => {
+        alert(error?.response?.data?.message || error?.message || "Failed to remove enrollment");
+      },
+    });
   };
 
   return (
@@ -197,7 +127,7 @@ const EnrollmentManager = () => {
           </div>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <LoadingPage message="Loading enrollment data..." />
         ) : !selectedCourseId ? (
           <div className="empty-state">
@@ -228,7 +158,7 @@ const EnrollmentManager = () => {
                       <button
                         className="action-btn enroll-btn"
                         onClick={() => handleEnroll(student)}
-                        disabled={enrollLoading}
+                        disabled={enrollMutation.isPending}
                         title="Enroll Student"
                       >
                         Enroll <ChevronRight size={16} />

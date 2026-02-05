@@ -1,93 +1,35 @@
-import { useState, useEffect } from "react";
+import { useCourseStudents } from "../hooks/useCourses";
+import { useCourseAttendance, useMarkAttendanceAdmin } from "../hooks/useAttendance";
 import "../styles/AttendanceTable.css";
 
-const AttendanceTable = ({ courseId, refreshKey }) => {
-  const base_url = import.meta.env.VITE_API_URL;
+const AttendanceTable = ({ courseId }) => {
+  // Use React Query hooks for parallel data fetching
+  const { data: studentsData, isLoading: studentsLoading } = useCourseStudents(courseId);
+  const { data: sessionsData, isLoading: sessionsLoading } = useCourseAttendance(courseId);
+  const markAttendanceMutation = useMarkAttendanceAdmin();
 
-  const [students, setStudents] = useState([]);
-  const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const isLoading = studentsLoading || sessionsLoading;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [studentsRes, sessionsRes] = await Promise.all([
-          fetch(`${base_url}/course/students/${courseId}`, {
-            credentials: "include",
-          }),
-          fetch(`${base_url}/attendance/course/${courseId}`, {
-            credentials: "include",
-          }),
-        ]);
-
-        const studentsData = await studentsRes.json();
-        const sessionsData = await sessionsRes.json();
-
-        if (studentsData.success && sessionsData.success) {
-          setStudents(studentsData.students);
-
-          // Sort: Newest date first (Left to Right)
-          const sortedSessions = sessionsData.data.sort(
-            (a, b) => new Date(b.date) - new Date(a.date)
-          );
-          setSessions(sortedSessions);
-        }
-      } catch (error) {
-        console.error("Error loading table data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [base_url, courseId, refreshKey]);
+  // Transform data
+  const students = studentsData?.success ? studentsData.students : [];
+  const sessions = sessionsData?.success
+    ? [...sessionsData.data].sort((a, b) => new Date(b.date) - new Date(a.date))
+    : [];
 
   const handleStatusChange = async (studentId, attendanceId, newValue) => {
     const isPresent = newValue === "Present";
 
-    // 1. Optimistic UI Update: Directly update the boolean in local state
-    setSessions((prevSessions) =>
-      prevSessions.map((session) => {
-        if (session.id === attendanceId) {
-          return {
-            ...session,
-            students: session.students.map((std) => {
-              if (std.id === studentId) {
-                // Ensure nested structure exists
-                const currentAtt = std.StudentAttendance || {};
-                return {
-                  ...std,
-                  StudentAttendance: {
-                    ...currentAtt,
-                    present: isPresent,
-                  },
-                };
-              }
-              return std;
-            }),
-          };
-        }
-        return session;
-      })
-    );
-
-    // 2. API Call
-    try {
-      await fetch(`${base_url}/attendance/mark/admin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          studentId: studentId,
-          attendanceId: attendanceId,
-          present: isPresent,
-        }),
-      });
-    } catch (error) {
-      console.error("Failed to mark attendance", error);
-      alert("Failed to update status.");
-    }
+    // Use React Query mutation
+    markAttendanceMutation.mutate({
+      studentId: studentId,
+      attendanceId: attendanceId,
+      present: isPresent,
+    }, {
+      onError: (error) => {
+        console.error("Failed to mark attendance", error);
+        alert("Failed to update status.");
+      },
+    });
   };
 
   const getStatus = (studentId, session) => {
@@ -100,7 +42,7 @@ const AttendanceTable = ({ courseId, refreshKey }) => {
     return record.StudentAttendance.present ? "Present" : "Absent";
   };
 
-  if (loading)
+  if (isLoading)
     return <div className="loading-spinner">Loading Attendance Sheet...</div>;
 
   return (

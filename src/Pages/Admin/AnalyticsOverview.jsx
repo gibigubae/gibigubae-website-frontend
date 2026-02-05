@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useDailyOverview } from "../../hooks/useAnalytics";
 import LoadingPage from "../../Components/LoadingPage";
 import ErrorPage from "../../Components/ErrorPage";
 import {
@@ -24,40 +24,16 @@ import "../../styles/Analytics.css";
 ChartJS.register(ArcElement, ChartTooltip, Legend);
 
 const AnalyticsOverview = () => {
-  const base_url = import.meta.env.VITE_API_URL;
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // Use React Query hook
+  const { data, isLoading, error, isError, refetch } = useDailyOverview();
 
-  const fetchOverview = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch(`${base_url}/analytics/daily/overview`, {
-        credentials: "include",
-      });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.message || "Failed to load");
-      setData(json);
-    } catch (err) {
-      console.error(err);
-      setError("Unable to load analytics overview.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOverview();
-  }, [base_url]);
-
-  if (loading) return <LoadingPage message="Fetching analytics..." />;
-  if (error)
+  if (isLoading) return <LoadingPage message="Fetching analytics..." />;
+  if (isError)
     return (
       <ErrorPage
         title="Analytics Error"
-        message={error}
-        onRetry={fetchOverview}
+        message={error?.response?.data?.message || error?.message || "Unable to load analytics"}
+        onRetry={() => refetch()}
       />
     );
 
@@ -101,7 +77,7 @@ const AnalyticsOverview = () => {
           <BarChart3 size={24} />
           <h1>Daily Analytics Overview</h1>
         </div>
-        <button className="refresh-btn" onClick={fetchOverview}>
+        <button className="refresh-btn" onClick={() => refetch()}>
           <RefreshCcw size={16} /> Refresh
         </button>
       </div>

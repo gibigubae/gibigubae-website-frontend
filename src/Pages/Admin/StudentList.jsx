@@ -1,14 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Search, Edit2, Trash2, X, Save } from "lucide-react";
 import Swal from "sweetalert2";
+import { useStudents, useUpdateStudent, useDeleteStudent } from "../../hooks/useStudents";
 import "../../styles/StudentList.css";
 import LoadingPage from "../../Components/LoadingPage";
 
 const StudentList = () => {
-  const base_url = import.meta.env.VITE_API_URL;
-  const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState(null);
+
+  // Use React Query hooks
+  const { data, isLoading } = useStudents();
+  const updateStudentMutation = useUpdateStudent();
+  const deleteStudentMutation = useDeleteStudent();
 
   // State for Editing
   const [editingStudent, setEditingStudent] = useState(null);
@@ -17,59 +22,43 @@ const StudentList = () => {
     year: "",
   });
 
-  // 1. Initial Fetch
-  useEffect(() => {
-    fetchStudents();
-  }, []);
+  // Get students list - use search results if available, otherwise use all students
+  const students = searchResults !== null 
+    ? searchResults 
+    : (data?.success ? data.data : []);
 
-  const fetchStudents = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${base_url}/student/all`, {
-        credentials: "include",
-      });
-      const data = await response.json();
-      if (data.success) {
-        setStudents(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching students:", error);
-      Swal.fire("Error", "Failed to fetch students", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 2. Search Functionality
+  // Handle search - manually trigger searchstudents endpoint
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchTerm.trim()) {
-      fetchStudents(); // Reset if empty
+      setSearchResults(null); // Clear search results
+      setIsSearching(false);
       return;
     }
 
-    setLoading(true);
+    setIsSearching(true);
     try {
-      const response = await fetch(`${base_url}/student/search/${searchTerm}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/student/search/${searchTerm}`, {
         credentials: "include",
       });
-      const data = await response.json();
-      if (data.success) {
-        setStudents(data.data);
+      const searchData = await response.json();
+      
+      if (searchData.success) {
+        setSearchResults(searchData.data);
       } else {
-        setStudents([]);
+        setSearchResults([]);
       }
     } catch (error) {
       console.error("Search failed:", error);
       Swal.fire("Error", "Search failed", "error");
+      setSearchResults([]);
     } finally {
-      setLoading(false);
+      setIsSearching(false);
     }
   };
 
-  // 3. Delete Logic (Fixed variable names & added Swal)
+  // Delete Logic
   const handleDelete = async (id) => {
-    // 1. Show the custom alert
     const result = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -82,55 +71,38 @@ const StudentList = () => {
 
     if (!result.isConfirmed) return;
 
-    try {
-      Swal.fire({
-        title: "Deleting...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
+    Swal.fire({
+      title: "Deleting...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
 
-      const response = await fetch(`${base_url}/student/admin/delete/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.message || "Delete failed");
-      }
-
-      // Show success message
-      Swal.fire({
-        title: "Deleted!",
-        text: "The student has been deleted.",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
-      // Update state to remove the deleted student
-      setStudents((prev) => prev.filter((student) => student.id !== id));
-    } catch (error) {
-      console.error("Delete failed:", error);
-      Swal.fire({
-        title: "Error!",
-        text: "Failed to delete student.",
-        icon: "error",
-      });
-    }
+    deleteStudentMutation.mutate(id, {
+      onSuccess: () => {
+        Swal.fire({
+          title: "Deleted!",
+          text: "The student has been deleted.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      },
+      onError: (error) => {
+        console.error("Delete failed:", error);
+        Swal.fire({
+          title: "Error!",
+          text: "Failed to delete student.",
+          icon: "error",
+        });
+      },
+    });
   };
 
-  // 4. Edit Logic
+  // Edit Logic
   const openEditModal = (student) => {
     setEditingStudent(student);
-    // Only populate the fields the backend allows updating
     setEditForm({
       department: student.department || "",
       year: student.year || "",
@@ -144,58 +116,33 @@ const StudentList = () => {
   const submitUpdate = async (e) => {
     e.preventDefault();
 
-    // Prepare payload exactly as requested
     const payload = {
-      year: parseInt(editForm.year, 10), // Ensure it is a number
+      year: parseInt(editForm.year, 10),
       department: editForm.department,
     };
 
-    try {
-      const response = await fetch(
-        `${base_url}/student/admin/update/${editingStudent.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(payload),
+    updateStudentMutation.mutate(
+      { id: editingStudent.id, data: payload },
+      {
+        onSuccess: () => {
+          setEditingStudent(null);
+          Swal.fire({
+            icon: "success",
+            title: "Updated!",
+            text: "Student details updated successfully",
+            timer: 2000,
+            showConfirmButton: false,
+          });
         },
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Update local state
-        setStudents((prev) =>
-          prev.map((s) =>
-            s.id === editingStudent.id
-              ? { ...s, ...payload } // Update only modified fields in UI
-              : s,
-          ),
-        );
-        setEditingStudent(null);
-
-        Swal.fire({
-          icon: "success",
-          title: "Updated!",
-          text: "Student details updated successfully",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Update Failed",
-          text: data.message || "Could not update student",
-        });
+        onError: () => {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Failed to update student",
+          });
+        },
       }
-    } catch (error) {
-      console.error("Update error:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "An unexpected error occurred",
-      });
-    }
+    );
   };
 
   return (
@@ -217,9 +164,21 @@ const StudentList = () => {
           </form>
         </div>
 
-        {loading ? (
-          <LoadingPage message="Loading students..." />
+        {isLoading || isSearching ? (
+          <LoadingPage message={isSearching ? "Searching students..." : "Loading students..."} />
         ) : (
+          <>
+            {searchResults !== null && (
+              <div style={{ padding: '10px', backgroundColor: '#f0f0f0', marginBottom: '10px', borderRadius: '4px' }}>
+                Found {students.length} student{students.length !== 1 ? 's' : ''} matching "{searchTerm}"
+                <button 
+                  onClick={() => { setSearchResults(null); setSearchTerm(''); }}
+                  style={{ marginLeft: '10px', padding: '4px 8px', cursor: 'pointer' }}
+                >
+                  Clear Search
+                </button>
+              </div>
+            )}
           <div className="table-responsive">
             <table className="student-table">
               <thead>
@@ -275,6 +234,7 @@ const StudentList = () => {
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {/* Edit Modal */}

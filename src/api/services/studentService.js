@@ -1,0 +1,50 @@
+import apiClient from '../apiClient';
+
+/**
+ * Student Service
+ * Handles all student-related API operations
+ */
+
+export const studentService = {
+  /**
+   * Get all students
+   * @returns {Promise} Response with all students
+   */
+  getAllStudents: async () => {
+    const response = await apiClient.get('/student/all');
+    return response.data;
+  },
+
+  /**
+   * Search students by term
+   * @param {string} term - Search term (name, ID, etc.)
+   * @returns {Promise} Response with matching students
+   */
+  searchStudents: async (term) => {
+    const response = await apiClient.get(`/student/search/${term}`);
+    return response.data;
+  },
+
+  /**
+   * Update student information (admin)
+   * @param {string|number} id - Student ID
+   * @param {Object} studentData - Updated student data (year, department)
+   * @returns {Promise} Response with updated student
+   */
+  updateStudent: async (id, studentData) => {
+    const response = await apiClient.put(`/student/admin/update/${id}`, studentData);
+    return response.data;
+  },
+
+  /**
+   * Delete a student (admin)
+   * @param {string|number} id - Student ID
+   * @returns {Promise} Response confirming deletion
+   */
+  deleteStudent: async (id) => {
+    const response = await apiClient.delete(`/student/admin/delete/${id}`);
+    return response.data;
+  },
+};
+
+export default studentService;

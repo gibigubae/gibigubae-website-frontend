@@ -1,108 +1,44 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { useCourseAttendance, useMarkAttendanceAdmin } from "../../hooks/useAttendance";
 import "../../styles/CourseAttendanceStyle.css";
 
 const CourseAttendance = () => {
-  const { id: courseId } = useParams(); // Get courseId from URL
-  const base_url = import.meta.env.VITE_API_URL;
+  const { id: courseId } = useParams();
 
-  const [sessions, setSessions] = useState([]);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  // 1. Fetch all attendance records for this course
-  useEffect(() => {
-    const fetchAttendance = async () => {
-      try {
-        const response = await fetch(
-          `${base_url}/attendance/course/${courseId}`,
-          {
-            credentials: "include",
-          }
-        );
-        const data = await response.json();
+  // Use React Query hooks
+  const { data, isLoading, error, isError } = useCourseAttendance(courseId);
+  const markAttendanceMutation = useMarkAttendanceAdmin();
 
-        if (data.success) {
-          setSessions(data.data);
-          // Automatically select the most recent session if available
-          if (data.data.length > 0) {
-            setSelectedSessionId(data.data[0].id);
-          }
-        } else {
-          setError("Failed to load attendance records.");
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Error fetching data.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Transform data
+  const sessions = data?.success ? data.data : [];
 
-    fetchAttendance();
-  }, [base_url, courseId]);
+  // Automatically select the most recent session when data loads
+  if (sessions.length > 0 && !selectedSessionId) {
+    setSelectedSessionId(sessions[0].id);
+  }
 
-  // 2. Handle Marking Attendance
-  const handleToggleAttendance = async (
-    studentId,
-    attendanceId,
-    currentStatus
-  ) => {
-    // Optimistic UI Update: Flip the boolean in the UI immediately
-    setSessions((prevSessions) =>
-      prevSessions.map((session) => {
-        if (session.id === attendanceId) {
-          return {
-            ...session,
-            students: session.students.map((student) => {
-              if (student.id === studentId) {
-                return {
-                  ...student,
-                  StudentAttendance: {
-                    ...student.StudentAttendance,
-                    present: !currentStatus,
-                  },
-                };
-              }
-              return student;
-            }),
-          };
-        }
-        return session;
-      })
-    );
-
-    try {
-      const response = await fetch(`${base_url}/attendance/mark/admin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          studentId: studentId,
-          attendanceId: attendanceId,
-          present: !currentStatus, // Send the new status
-        }),
-      });
-
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error("API failed");
-      }
-    } catch (err) {
-      console.error("Failed to mark attendance", err);
-      alert("Failed to update attendance. Reverting changes.");
-      // Revert changes if API fails (Optional: Trigger a re-fetch)
-    }
+  // Handle Marking Attendance
+  const handleToggleAttendance = async (studentId, attendanceId, currentStatus) => {
+    markAttendanceMutation.mutate({
+      studentId: studentId,
+      attendanceId: attendanceId,
+      present: !currentStatus,
+    }, {
+      onError: (err) => {
+        console.error("Failed to mark attendance", err);
+        alert("Failed to update attendance.");
+      },
+    });
   };
 
   // Helper to get the currently selected session object
-  const currentSession = sessions.find(
-    (s) => s.id === parseInt(selectedSessionId)
-  );
+  const currentSession = sessions.find((s) => s.id === parseInt(selectedSessionId));
 
-  if (loading) return <div className="loading">Loading Attendance...</div>;
-  if (error) return <div className="error">{error}</div>;
+  if (isLoading) return <div className="loading">Loading Attendance...</div>;
+  if (isError || error) return <div className="error">{error?.response?.data?.message || error?.message || "Error loading attendance"}</div>;
 
   return (
     <div className="attendance-container">

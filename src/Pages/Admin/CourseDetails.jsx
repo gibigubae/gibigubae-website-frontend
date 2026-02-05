@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import QRCode from "react-qr-code";
 import {
@@ -10,6 +10,8 @@ import {
   BarChart3,
   CheckSquare,
 } from "lucide-react";
+import { useCourse, useCourseStudents } from "../../hooks/useCourses";
+import { useCourseAttendance } from "../../hooks/useAttendance";
 import CreateAttendanceModal from "../../Components/CreateAttendanceModal";
 import AttendanceTable from "../../Components/AttendanceTable";
 import "../../styles/CourseDetails.css";
@@ -19,97 +21,58 @@ import ErrorPage from "../../Components/ErrorPage";
 const CourseDetails = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
-  const base_url = import.meta.env.VITE_API_URL;
 
-  const [course, setCourse] = useState(null);
-  const [attendance, setAttendance] = useState([]);
-  const [totalStudents, setTotalStudents] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [showQRCode, setShowQRCode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [showAttendanceTable, setShowAttendanceTable] = useState(false);
-  const [tableRefreshKey, setTableRefreshKey] = useState(0);
 
-  useEffect(() => {
-    const fetchCourseDetails = async () => {
-      try {
-        // 1. Fetch Course Info
-        const courseRes = await fetch(`${base_url}/course/${courseId}`, {
-          credentials: "include",
-        });
-        const courseData = await courseRes.json();
-        if (!courseData.success)
-          throw new Error(courseData.message || "Failed to fetch course");
+  // Use React Query hooks for parallel data fetching
+  const { data: courseData, isLoading: courseLoading, error: courseError } = useCourse(courseId);
+  const { data: studentsData, isLoading: studentsLoading } = useCourseStudents(courseId);
+  const { data: attendanceData, isLoading: attendanceLoading, error: attendanceError } = useCourseAttendance(courseId);
 
-        setCourse({
-          id: courseData.data.id,
-          title: courseData.data.course_name,
-          description: courseData.data.description,
-          startDate: new Date(courseData.data.start_date).toLocaleDateString(),
-          endDate: new Date(courseData.data.end_date).toLocaleDateString(),
-          instructor: courseData.data.instructor || "Admin",
-        });
+  // Combined loading and error states
+  const isLoading = courseLoading || studentsLoading || attendanceLoading;
+  const error = courseError || attendanceError;
 
-        // 2. Fetch Total Students
-        const studentsRes = await fetch(
-          `${base_url}/course/students/${courseId}`,
-          {
-            credentials: "include",
-          },
-        );
-        const studentsData = await studentsRes.json();
-        if (studentsData.success) {
-          setTotalStudents(studentsData.totalStudents);
-        }
-
-        // 3. Fetch Attendance Sessions
-        const attendanceRes = await fetch(
-          `${base_url}/attendance/course/${courseId}`,
-          { credentials: "include" },
-        );
-        const attendanceData = await attendanceRes.json();
-        if (!attendanceData.success)
-          throw new Error(
-            attendanceData.message || "Failed to fetch attendance",
-          );
-
-        const formattedAttendance = attendanceData.data.map((item) => ({
-          id: item.id,
-          date: new Date(item.date).toLocaleDateString(),
-          time: new Date(item.date).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          code: item.code,
-          highlighted: item.status === "present",
-        }));
-
-        setAttendance(formattedAttendance);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load details. Please try again.");
-      } finally {
-        setLoading(false);
+  // Transform data
+  const course = courseData?.success
+    ? {
+        id: courseData.data.id,
+        title: courseData.data.course_name,
+        description: courseData.data.description,
+        startDate: new Date(courseData.data.start_date).toLocaleDateString(),
+        endDate: new Date(courseData.data.end_date).toLocaleDateString(),
+        instructor: courseData.data.instructor || "Admin",
       }
-    };
+    : null;
 
-    fetchCourseDetails();
-  }, [courseId, base_url, isModalOpen, tableRefreshKey]);
+  const totalStudents = studentsData?.success ? studentsData.totalStudents : 0;
+
+  const attendance = attendanceData?.success
+    ? attendanceData.data.map((item) => ({
+        id: item.id,
+        date: new Date(item.date).toLocaleDateString(),
+        time: new Date(item.date).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        code: item.code,
+        highlighted: item.status === "present",
+      }))
+    : [];
 
   const reversedAttendance = [...attendance].reverse();
 
   const handleAttendanceCreated = () => {
-    setTableRefreshKey((prev) => prev + 1);
     setShowAttendanceTable(true);
   };
 
-  if (loading) return <LoadingPage message="Loading course details..." />;
+  if (isLoading) return <LoadingPage message="Loading course details..." />;
   if (error)
     return (
       <ErrorPage
-        message={error}
+        message={error?.response?.data?.message || error?.message || "Failed to load details"}
         title="Failed to Load Course"
         onRetry={() => window.location.reload()}
       />
@@ -147,7 +110,7 @@ const CourseDetails = () => {
                 Back to Dashboard
               </button>
             </div>
-            <AttendanceTable courseId={courseId} refreshKey={tableRefreshKey} />
+            <AttendanceTable courseId={courseId} />
           </div>
         ) : (
           // DASHBOARD / CARD VIEW

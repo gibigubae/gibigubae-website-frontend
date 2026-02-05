@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLogin } from "../hooks/useAuth";
 import "./Auth.css";
 import ErrorPage from "../Components/ErrorPage";
 
@@ -9,56 +10,31 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const apiUrl = import.meta.env.VITE_API_URL;
 
-  // Clear any stale role when the login page mounts
-  useEffect(() => {
-    localStorage.removeItem("userRole");
-  }, []);
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      // Replace with your actual API endpoint
-      const response = await fetch(`${apiUrl}/sign-in`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-        credentials: "include",
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || "Login failed");
-        return;
-      }
-
+  // Use React Query mutation hook for login
+  const { mutate: login, isPending, error, isError } = useLogin({
+    onSuccess: (data) => {
       const role = data.data?.role;
-      // Store token and role
-      // localStorage.setItem("token", data.token)
+      // Store role
       localStorage.setItem("userRole", role);
 
+      // Navigate based on role
       if (role === "admin" || role === "super_admin") {
         navigate("/admin/courses");
       } else {
         navigate("/student/courses");
       }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-      console.error("Login error:", err);
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  // Clear any stale role when the login page mounts
+  useEffect(() => {
+    localStorage.removeItem("userRole");
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    login({ email, password });
   };
 
   return (
@@ -87,7 +63,13 @@ const Login = () => {
           <div className="auth-form">
             <h1 className="auth-title">Login</h1>
 
-            {error && <ErrorPage compact title="Login Error" message={error} />}
+            {isError && (
+              <ErrorPage
+                compact
+                title="Login Error"
+                message={error?.response?.data?.message || error?.message || "Login failed"}
+              />
+            )}
 
             <form onSubmit={handleLogin}>
               <div className="form-group">
@@ -112,8 +94,8 @@ const Login = () => {
                 />
               </div>
 
-              <button type="submit" disabled={loading} className="auth-button">
-                {loading ? "Logging in..." : "Login"}
+              <button type="submit" disabled={isPending} className="auth-button">
+                {isPending ? "Logging in..." : "Login"}
               </button>
             </form>
 

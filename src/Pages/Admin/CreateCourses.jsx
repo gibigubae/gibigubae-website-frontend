@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCreateCourse } from "../../hooks/useCourses";
 import "../../styles/CreateCourse.css";
 
 const CreateCourses = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     course_name: "",
     description: "",
@@ -13,10 +16,11 @@ const CreateCourses = () => {
     enrollment_deadline: "",
   });
 
-  const base_url = import.meta.env.VITE_API_URL;
   const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+
+  // Use React Query mutation
+  const createCourseMutation = useCreateCourse();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,7 +46,6 @@ const CreateCourses = () => {
     else if (formData.description.length > 280)
       newErrors.description = "Description must be 280 characters or less";
 
-    // 2. Added validation for Year Level and Semester
     if (!formData.year_level) newErrors.year_level = "Year level is required";
     if (!formData.semester) newErrors.semester = "Semester is required";
 
@@ -73,54 +76,41 @@ const CreateCourses = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setIsSubmitting(true);
     setSuccessMsg("");
 
-    try {
-      // 3. Prepare payload: Convert year and semester to integers
-      const payload = {
-        ...formData,
-        year_level: parseInt(formData.year_level, 10),
-        semester: parseInt(formData.semester, 10),
-      };
+    // Prepare payload
+    const payload = {
+      ...formData,
+      year_level: parseInt(formData.year_level, 10),
+      semester: parseInt(formData.semester, 10),
+    };
 
-      console.log("[v0] Submitting course data:", payload);
+    createCourseMutation.mutate(payload, {
+      onSuccess: () => {
+        setSuccessMsg("Course created successfully!");
+        setTimeout(() => {
+          setSuccessMsg("");
+          navigate("/admin/courses");
+        }, 2000);
 
-      const response = await fetch(`${base_url}/course`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        credentials: "include",
-      });
-
-      const data = await response.json();
-      if (!data.success) {
-        setErrors({
-          submit: data.message || data.error || "Course Creation Failed",
+        // Reset form
+        setFormData({
+          course_name: "",
+          description: "",
+          year_level: "",
+          semester: "",
+          start_date: "",
+          end_date: "",
+          enrollment_start_date: "",
+          enrollment_deadline: "",
         });
-        return;
-      }
-
-      setSuccessMsg("Course created successfully!");
-      setTimeout(() => setSuccessMsg(""), 3000);
-
-      // Reset form
-      setFormData({
-        course_name: "",
-        description: "",
-        year_level: "",
-        semester: "",
-        start_date: "",
-        end_date: "",
-        enrollment_start_date: "",
-        enrollment_deadline: "",
-      });
-    } catch (error) {
-      console.error("Error creating course:", error);
-      setErrors({ submit: "Failed to create course. Please try again." });
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+      onError: (error) => {
+        setErrors({
+          submit: error?.response?.data?.message || error?.message || "Course Creation Failed",
+        });
+      },
+    });
   };
 
   const charCount = formData.description.length;
@@ -290,10 +280,10 @@ const CreateCourses = () => {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={createCourseMutation.isPending}
               className="create-course-button"
             >
-              {isSubmitting ? "Creating course..." : "Create course"}
+              {createCourseMutation.isPending ? "Creating course..." : "Create course"}
             </button>
           </form>
         </div>

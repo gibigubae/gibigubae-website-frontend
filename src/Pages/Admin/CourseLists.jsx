@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCourses, useUpdateCourse, useDeleteCourse } from "../../hooks/useCourses";
 import CourseCard from "../../Components/CourseCard";
 import Swal from "sweetalert2";
 import LoadingPage from "../../Components/LoadingPage";
@@ -8,13 +9,14 @@ import "../../styles/CourseList.css";
 
 const CourseLists = () => {
   const navigate = useNavigate();
-  const base_url = import.meta.env.VITE_API_URL;
 
-  const [courses, setCourses] = useState([]);
+  // Use React Query hooks
+  const { data, isLoading, error, isError } = useCourses();
+  const updateCourseMutation = useUpdateCourse();
+  const deleteCourseMutation = useDeleteCourse();
+
   const [filterStatus, setFilterStatus] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [editingCourse, setEditingCourse] = useState(null);
 
   // State for the edit form
@@ -27,44 +29,24 @@ const CourseLists = () => {
     enrollment_deadline: "",
   });
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await fetch(`${base_url}/course`, {
-          credentials: "include",
-        });
-        const data = await response.json();
-
-        if (!data.success) {
-          setError(data.message || "Failed to fetch courses");
-        } else {
-          const formattedCourses = data.data.map((course) => ({
-            id: course.id,
-            title: course.course_name,
-            description: course.description,
-            start_date: course.start_date,
-            end_date: course.end_date,
-            enrollment_start_date: course.enrollment_start_date,
-            enrollment_deadline: course.enrollment_deadline,
-            status:
-              new Date(course.start_date) > new Date()
-                ? "Upcoming"
-                : new Date(course.end_date) < new Date()
-                  ? "Past"
-                  : "Current",
-          }));
-          setCourses(formattedCourses);
-        }
-      } catch (err) {
-        console.error("Error fetching courses:", err);
-        setError("Error fetching courses. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourses();
-  }, [base_url]);
+  // Transform API data to component format
+  const courses = data?.success
+    ? data.data.map((course) => ({
+        id: course.id,
+        title: course.course_name,
+        description: course.description,
+        start_date: course.start_date,
+        end_date: course.end_date,
+        enrollment_start_date: course.enrollment_start_date,
+        enrollment_deadline: course.enrollment_deadline,
+        status:
+          new Date(course.start_date) > new Date()
+            ? "Upcoming"
+            : new Date(course.end_date) < new Date()
+              ? "Past"
+              : "Current",
+      }))
+    : [];
 
   const filteredCourses = courses.filter((course) => {
     const matchesStatus =
@@ -92,108 +74,59 @@ const CourseLists = () => {
   };
 
   const handleDelete = async (courseId) => {
-    // 1. Show the custom alert
     const result = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33", // Red for delete
-      cancelButtonColor: "#3085d6", // Blue for cancel
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
     });
 
-    // 2. If user clicked "Cancel", stop here
     if (!result.isConfirmed) return;
 
-    // 3. Proceed with deletion
-    try {
-      // Optional: Show a "Deleting..." loading state
-      Swal.fire({
-        title: "Deleting...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
+    Swal.fire({
+      title: "Deleting...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
 
-      const response = await fetch(`${base_url}/course/${courseId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.message || "Delete failed");
-      }
-
-      // 4. Show success message
-      Swal.fire({
-        title: "Deleted!",
-        text: "The course has been deleted.",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
-      setCourses((prevCourses) =>
-        prevCourses.filter((course) => course.id !== courseId),
-      );
-    } catch (error) {
-      console.error("Delete failed:", error);
-      // 5. Show error message
-      Swal.fire({
-        title: "Error!",
-        text: "Failed to delete course.",
-        icon: "error",
-      });
-    }
+    deleteCourseMutation.mutate(courseId, {
+      onSuccess: () => {
+        Swal.fire({
+          title: "Deleted!",
+          text: "The course has been deleted.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      },
+      onError: (error) => {
+        console.error("Delete failed:", error);
+        Swal.fire({
+          title: "Error!",
+          text: "Failed to delete course.",
+          icon: "error",
+        });
+      },
+    });
   };
 
   const submitEdit = async () => {
-    try {
-      const response = await fetch(`${base_url}/course/${editingCourse}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(editForm),
-      });
-
-      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-      const data = await response.json();
-      if (!data.success) throw new Error();
-
-      setCourses((prev) =>
-        prev.map((course) =>
-          course.id === editingCourse
-            ? {
-                ...course,
-                title: data.data.course_name,
-                description: data.data.description,
-                start_date: data.data.start_date,
-                end_date: data.data.end_date,
-                enrollment_start_date: data.data.enrollment_start_date,
-                enrollment_deadline: data.data.enrollment_deadline,
-                status:
-                  new Date(data.data.start_date) > new Date()
-                    ? "Upcoming"
-                    : new Date(data.data.end_date) < new Date()
-                      ? "Past"
-                      : "Current",
-              }
-            : course,
-        ),
-      );
-
-      setEditingCourse(null);
-    } catch {
-      alert("Failed to update course");
-    }
+    updateCourseMutation.mutate(
+      { id: editingCourse, data: editForm },
+      {
+        onSuccess: () => {
+          setEditingCourse(null);
+        },
+        onError: () => {
+          alert("Failed to update course");
+        },
+      }
+    );
   };
 
   const toDateTimeLocal = (iso) => {
@@ -244,12 +177,12 @@ const CourseLists = () => {
           </div>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <LoadingPage message="Loading courses..." />
-        ) : error ? (
+        ) : isError ? (
           <ErrorPage
             title="Failed to Load Courses"
-            message={error}
+            message={error?.response?.data?.message || error?.message || "Failed to load courses"}
             onRetry={() => window.location.reload()}
           />
         ) : filteredCourses.length > 0 ? (
