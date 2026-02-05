@@ -1,5 +1,4 @@
 import { Edit2, Eye, Trash2 } from "lucide-react";
-import { useState } from "react";
 import "../styles/CourseCard.css";
 
 const CourseCard = ({
@@ -9,16 +8,11 @@ const CourseCard = ({
   onView,
   userType = "student",
 }) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-
   const handleDeleteClick = async () => {
-    setIsDeleting(true);
-
     try {
       await onDelete(course.id);
     } catch (error) {
       console.error("Delete failed", error);
-      setIsDeleting(false);
     }
   };
 
@@ -59,7 +53,7 @@ const CourseCard = ({
               aria-label="Delete course"
               title="Delete"
             >
-              {isDeleting ? <span className="spinner" /> : <Trash2 size={18} />}
+              <Trash2 size={18} />
               <span className="btn-text">Delete</span>
             </button>
           </>

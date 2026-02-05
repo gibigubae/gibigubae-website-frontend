@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseCard from "../../Components/CourseCard";
+import Swal from "sweetalert2";
+import LoadingPage from "../../Components/LoadingPage";
+import ErrorPage from "../../Components/ErrorPage";
 import "../../styles/CourseList.css";
 
 const CourseLists = () => {
@@ -13,6 +16,8 @@ const CourseLists = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editingCourse, setEditingCourse] = useState(null);
+
+  // State for the edit form
   const [editForm, setEditForm] = useState({
     course_name: "",
     description: "",
@@ -45,8 +50,8 @@ const CourseLists = () => {
               new Date(course.start_date) > new Date()
                 ? "Upcoming"
                 : new Date(course.end_date) < new Date()
-                ? "Past"
-                : "Current",
+                  ? "Past"
+                  : "Current",
           }));
           setCourses(formattedCourses);
         }
@@ -72,7 +77,6 @@ const CourseLists = () => {
 
   const handleEdit = (course) => {
     setEditingCourse(course.id);
-
     setEditForm({
       course_name: course.title,
       description: course.description,
@@ -88,13 +92,31 @@ const CourseLists = () => {
   };
 
   const handleDelete = async (courseId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this course?"
-    );
+    // 1. Show the custom alert
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33", // Red for delete
+      cancelButtonColor: "#3085d6", // Blue for cancel
+      confirmButtonText: "Yes, delete it!",
+    });
 
-    if (!confirmed) return;
+    // 2. If user clicked "Cancel", stop here
+    if (!result.isConfirmed) return;
 
+    // 3. Proceed with deletion
     try {
+      // Optional: Show a "Deleting..." loading state
+      Swal.fire({
+        title: "Deleting...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const response = await fetch(`${base_url}/course/${courseId}`, {
         method: "DELETE",
         credentials: "include",
@@ -110,12 +132,26 @@ const CourseLists = () => {
         throw new Error(data.message || "Delete failed");
       }
 
+      // 4. Show success message
+      Swal.fire({
+        title: "Deleted!",
+        text: "The course has been deleted.",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
       setCourses((prevCourses) =>
-        prevCourses.filter((course) => course.id !== courseId)
+        prevCourses.filter((course) => course.id !== courseId),
       );
     } catch (error) {
       console.error("Delete failed:", error);
-      alert("Failed to delete course. Please try again.");
+      // 5. Show error message
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to delete course.",
+        icon: "error",
+      });
     }
   };
 
@@ -128,12 +164,8 @@ const CourseLists = () => {
         body: JSON.stringify(editForm),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
       const data = await response.json();
-
       if (!data.success) throw new Error();
 
       setCourses((prev) =>
@@ -151,11 +183,11 @@ const CourseLists = () => {
                   new Date(data.data.start_date) > new Date()
                     ? "Upcoming"
                     : new Date(data.data.end_date) < new Date()
-                    ? "Past"
-                    : "Current",
+                      ? "Past"
+                      : "Current",
               }
-            : course
-        )
+            : course,
+        ),
       );
 
       setEditingCourse(null);
@@ -213,9 +245,13 @@ const CourseLists = () => {
         </div>
 
         {loading ? (
-          <p>Loading courses...</p>
+          <LoadingPage message="Loading courses..." />
         ) : error ? (
-          <p className="error-message">{error}</p>
+          <ErrorPage
+            title="Failed to Load Courses"
+            message={error}
+            onRetry={() => window.location.reload()}
+          />
         ) : filteredCourses.length > 0 ? (
           <div className="courses-grid">
             {filteredCourses.map((course) => (
@@ -236,69 +272,102 @@ const CourseLists = () => {
         )}
       </div>
 
+      {/* --- UPDATED MODAL SECTION --- */}
       {editingCourse && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Edit Course</h2>
+            <h2 className="modal-title">Edit Course</h2>
 
-            <input
-              type="text"
-              value={editForm.course_name}
-              onChange={(e) =>
-                setEditForm({ ...editForm, course_name: e.target.value })
-              }
-              placeholder="Course Name"
-            />
+            <div className="modal-form-group">
+              <label className="modal-label">Course Name</label>
+              <input
+                type="text"
+                className="modal-input"
+                value={editForm.course_name}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, course_name: e.target.value })
+                }
+                placeholder="Enter course name"
+              />
+            </div>
 
-            <textarea
-              value={editForm.description}
-              onChange={(e) =>
-                setEditForm({ ...editForm, description: e.target.value })
-              }
-              placeholder="Description"
-            />
+            <div className="modal-form-group">
+              <label className="modal-label">Description</label>
+              <textarea
+                className="modal-textarea"
+                value={editForm.description}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, description: e.target.value })
+                }
+                placeholder="Enter course description"
+              />
+            </div>
 
-            <input
-              type="datetime-local"
-              value={editForm.start_date}
-              onChange={(e) =>
-                setEditForm({ ...editForm, start_date: e.target.value })
-              }
-            />
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <div className="modal-form-group" style={{ flex: 1 }}>
+                <label className="modal-label">Start Date</label>
+                <input
+                  type="datetime-local"
+                  className="modal-input"
+                  value={editForm.start_date}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, start_date: e.target.value })
+                  }
+                />
+              </div>
 
-            <input
-              type="datetime-local"
-              value={editForm.end_date}
-              onChange={(e) =>
-                setEditForm({ ...editForm, end_date: e.target.value })
-              }
-            />
+              <div className="modal-form-group" style={{ flex: 1 }}>
+                <label className="modal-label">End Date</label>
+                <input
+                  type="datetime-local"
+                  className="modal-input"
+                  value={editForm.end_date}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, end_date: e.target.value })
+                  }
+                />
+              </div>
+            </div>
 
-            <input
-              type="datetime-local"
-              value={editForm.enrollment_start_date}
-              onChange={(e) =>
-                setEditForm({
-                  ...editForm,
-                  enrollment_start_date: e.target.value,
-                })
-              }
-            />
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <div className="modal-form-group" style={{ flex: 1 }}>
+                <label className="modal-label">Enrollment Start</label>
+                <input
+                  type="datetime-local"
+                  className="modal-input"
+                  value={editForm.enrollment_start_date}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      enrollment_start_date: e.target.value,
+                    })
+                  }
+                />
+              </div>
 
-            <input
-              type="datetime-local"
-              value={editForm.enrollment_deadline}
-              onChange={(e) =>
-                setEditForm({
-                  ...editForm,
-                  enrollment_deadline: e.target.value,
-                })
-              }
-            />
+              <div className="modal-form-group" style={{ flex: 1 }}>
+                <label className="modal-label">Enrollment Deadline</label>
+                <input
+                  type="datetime-local"
+                  className="modal-input"
+                  value={editForm.enrollment_deadline}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      enrollment_deadline: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
 
             <div className="modal-actions">
-              <button onClick={submitEdit}>Save</button>
-              <button onClick={closeModal}>Cancel</button>
+              <button className="btn-cancel" onClick={closeModal}>
+                Cancel
+              </button>
+              <button className="btn-save" onClick={submitEdit}>
+                Save Changes
+              </button>
             </div>
           </div>
         </div>

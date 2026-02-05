@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Search, Edit2, Trash2, X, Save } from "lucide-react";
+import Swal from "sweetalert2";
 import "../../styles/StudentList.css";
+import LoadingPage from "../../Components/LoadingPage";
 
 const StudentList = () => {
   const base_url = import.meta.env.VITE_API_URL;
@@ -10,7 +12,10 @@ const StudentList = () => {
 
   // State for Editing
   const [editingStudent, setEditingStudent] = useState(null);
-  const [editForm, setEditForm] = useState({});
+  const [editForm, setEditForm] = useState({
+    department: "",
+    year: "",
+  });
 
   // 1. Initial Fetch
   useEffect(() => {
@@ -29,6 +34,7 @@ const StudentList = () => {
       }
     } catch (error) {
       console.error("Error fetching students:", error);
+      Swal.fire("Error", "Failed to fetch students", "error");
     } finally {
       setLoading(false);
     }
@@ -55,52 +61,79 @@ const StudentList = () => {
       }
     } catch (error) {
       console.error("Search failed:", error);
+      Swal.fire("Error", "Search failed", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // 3. Delete Functionality
+  // 3. Delete Logic (Fixed variable names & added Swal)
   const handleDelete = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this student? This action cannot be undone."
-    );
-    if (!confirmed) return;
+    // 1. Show the custom alert
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
+      Swal.fire({
+        title: "Deleting...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const response = await fetch(`${base_url}/student/admin/delete/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+
       const data = await response.json();
 
-      if (data.success) {
-        setStudents((prev) => prev.filter((s) => s.id !== id));
-        alert("Student deleted successfully");
-      } else {
-        alert(data.message || "Delete failed");
+      if (!data.success) {
+        throw new Error(data.message || "Delete failed");
       }
+
+      // Show success message
+      Swal.fire({
+        title: "Deleted!",
+        text: "The student has been deleted.",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      // Update state to remove the deleted student
+      setStudents((prev) => prev.filter((student) => student.id !== id));
     } catch (error) {
-      console.error("Delete error:", error);
+      console.error("Delete failed:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to delete student.",
+        icon: "error",
+      });
     }
   };
 
   // 4. Edit Logic
   const openEditModal = (student) => {
     setEditingStudent(student);
-    // Populate form with existing data
+    // Only populate the fields the backend allows updating
     setEditForm({
-      first_name: student.first_name || "",
-      father_name: student.father_name || "",
-      grand_father_name: student.grand_father_name || "",
-      christian_name: student.christian_name || "",
-      id_number: student.id_number || "",
-      email: student.email || "",
-      phone_number: student.phone_number || "",
       department: student.department || "",
       year: student.year || "",
-      dorm_block: student.dorm_block || "",
-      room_number: student.room_number || "",
     });
   };
 
@@ -110,6 +143,13 @@ const StudentList = () => {
 
   const submitUpdate = async (e) => {
     e.preventDefault();
+
+    // Prepare payload exactly as requested
+    const payload = {
+      year: parseInt(editForm.year, 10), // Ensure it is a number
+      department: editForm.department,
+    };
+
     try {
       const response = await fetch(
         `${base_url}/student/admin/update/${editingStudent.id}`,
@@ -117,25 +157,44 @@ const StudentList = () => {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify(editForm),
-        }
+          body: JSON.stringify(payload),
+        },
       );
 
       const data = await response.json();
 
       if (data.success) {
-        // Update local state to reflect changes without refreshing
+        // Update local state
         setStudents((prev) =>
-          prev.map((s) => (s.id === editingStudent.id ? data.data : s))
+          prev.map((s) =>
+            s.id === editingStudent.id
+              ? { ...s, ...payload } // Update only modified fields in UI
+              : s,
+          ),
         );
         setEditingStudent(null);
-        alert("Student updated successfully");
+
+        Swal.fire({
+          icon: "success",
+          title: "Updated!",
+          text: "Student details updated successfully",
+          timer: 2000,
+          showConfirmButton: false,
+        });
       } else {
-        alert(data.message || "Update failed");
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: data.message || "Could not update student",
+        });
       }
     } catch (error) {
       console.error("Update error:", error);
-      alert("Failed to update student");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An unexpected error occurred",
+      });
     }
   };
 
@@ -159,7 +218,7 @@ const StudentList = () => {
         </div>
 
         {loading ? (
-          <div className="loading">Loading students...</div>
+          <LoadingPage message="Loading students..." />
         ) : (
           <div className="table-responsive">
             <table className="student-table">
@@ -169,8 +228,8 @@ const StudentList = () => {
                   <th>Full Name</th>
                   <th>Department</th>
                   <th>Year</th>
-                  <th>Dorm/Room</th>
-                  <th>Actions</th>
+                  <th>BlockNumber/Room</th>
+                  <th>Edit/Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -224,10 +283,7 @@ const StudentList = () => {
             className="modal-overlay"
             onClick={() => setEditingStudent(null)}
           >
-            <div
-              className="modal-content large"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h2>Edit Student Details</h2>
                 <button
@@ -238,70 +294,25 @@ const StudentList = () => {
                 </button>
               </div>
 
+              {/* Informational Header */}
+              <div style={{ marginBottom: "20px", color: "#666" }}>
+                Editing:{" "}
+                <strong>
+                  {editingStudent.first_name} {editingStudent.father_name}
+                </strong>{" "}
+                ({editingStudent.id_number})
+              </div>
+
               <form onSubmit={submitUpdate} className="edit-form">
                 <div className="form-grid">
-                  <div className="form-group">
-                    <label>First Name</label>
-                    <input
-                      name="first_name"
-                      value={editForm.first_name}
-                      onChange={handleEditChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Father Name</label>
-                    <input
-                      name="father_name"
-                      value={editForm.father_name}
-                      onChange={handleEditChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>G. Father Name</label>
-                    <input
-                      name="grand_father_name"
-                      value={editForm.grand_father_name}
-                      onChange={handleEditChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Christian Name</label>
-                    <input
-                      name="christian_name"
-                      value={editForm.christian_name}
-                      onChange={handleEditChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>ID Number</label>
-                    <input
-                      name="id_number"
-                      value={editForm.id_number}
-                      onChange={handleEditChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Email</label>
-                    <input
-                      name="email"
-                      value={editForm.email}
-                      onChange={handleEditChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Phone</label>
-                    <input
-                      name="phone_number"
-                      value={editForm.phone_number}
-                      onChange={handleEditChange}
-                    />
-                  </div>
                   <div className="form-group">
                     <label>Department</label>
                     <input
                       name="department"
                       value={editForm.department}
                       onChange={handleEditChange}
+                      placeholder="e.g. Software Engineering"
+                      required
                     />
                   </div>
                   <div className="form-group">
@@ -311,22 +322,10 @@ const StudentList = () => {
                       type="number"
                       value={editForm.year}
                       onChange={handleEditChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Dorm Block</label>
-                    <input
-                      name="dorm_block"
-                      value={editForm.dorm_block}
-                      onChange={handleEditChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Room Number</label>
-                    <input
-                      name="room_number"
-                      value={editForm.room_number}
-                      onChange={handleEditChange}
+                      placeholder="e.g. 4"
+                      required
+                      min="1"
+                      max="7"
                     />
                   </div>
                 </div>

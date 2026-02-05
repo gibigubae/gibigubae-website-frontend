@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseCard from "../../Components/CourseCard";
 import "../../styles/CourseList.css";
-import StudentNavBar from "./StudentNavBar";
+import LoadingPage from "../../Components/LoadingPage";
+import ErrorPage from "../../Components/ErrorPage";
 
 const CourseList = () => {
   const navigate = useNavigate();
@@ -72,7 +73,6 @@ const CourseList = () => {
 
   return (
     <>
-      <StudentNavBar />
       <div className="course-list-container">
         <div className="course-list-header">
           <h1 className="page-title">Courses</h1>
@@ -99,9 +99,13 @@ const CourseList = () => {
         </div>
 
         {loading ? (
-          <p>Loading courses...</p>
+          <LoadingPage message="Loading courses..." />
         ) : error ? (
-          <p className="error-message">{error}</p>
+          <ErrorPage
+            title="Failed to Load Courses"
+            message={error}
+            onRetry={() => window.location.reload()}
+          />
         ) : filteredCourses.length > 0 ? (
           <div className="courses-grid">
             {filteredCourses.map((course) => (

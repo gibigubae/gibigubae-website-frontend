@@ -1,12 +1,15 @@
-import StudentNavBar from "./StudentNavBar"
+import { Outlet } from "react-router-dom";
+import StudentNavBar from "./StudentNavBar";
 
-const StudentLayout = ({ children }) => {
+const StudentLayout = () => {
   return (
     <div className="student-layout">
       <StudentNavBar />
-      <main className="student-main">{children}</main>
+      <main className="student-main">
+        <Outlet />
+      </main>
     </div>
-  )
-}
+  );
+};
 
-export default StudentLayout
+export default StudentLayout;

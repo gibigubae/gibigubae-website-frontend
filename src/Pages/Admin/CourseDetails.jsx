@@ -8,11 +8,13 @@ import {
   Calendar,
   Edit2,
   BarChart3,
-  CheckSquare, // Icon for the new button
+  CheckSquare,
 } from "lucide-react";
 import CreateAttendanceModal from "../../Components/CreateAttendanceModal";
-import AttendanceTable from "../../Components/AttendanceTable"; // Import Table
+import AttendanceTable from "../../Components/AttendanceTable";
 import "../../styles/CourseDetails.css";
+import LoadingPage from "../../Components/LoadingPage";
+import ErrorPage from "../../Components/ErrorPage";
 
 const CourseDetails = () => {
   const { courseId } = useParams();
@@ -21,24 +23,26 @@ const CourseDetails = () => {
 
   const [course, setCourse] = useState(null);
   const [attendance, setAttendance] = useState([]);
+  const [totalStudents, setTotalStudents] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showQRCode, setShowQRCode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // --- NEW STATE ---
   const [showAttendanceTable, setShowAttendanceTable] = useState(false);
   const [tableRefreshKey, setTableRefreshKey] = useState(0);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
+        // 1. Fetch Course Info
         const courseRes = await fetch(`${base_url}/course/${courseId}`, {
           credentials: "include",
         });
         const courseData = await courseRes.json();
         if (!courseData.success)
           throw new Error(courseData.message || "Failed to fetch course");
+
         setCourse({
           id: courseData.data.id,
           title: courseData.data.course_name,
@@ -48,15 +52,27 @@ const CourseDetails = () => {
           instructor: courseData.data.instructor || "Admin",
         });
 
-        // Fetch attendance for the card view
+        // 2. Fetch Total Students
+        const studentsRes = await fetch(
+          `${base_url}/course/students/${courseId}`,
+          {
+            credentials: "include",
+          },
+        );
+        const studentsData = await studentsRes.json();
+        if (studentsData.success) {
+          setTotalStudents(studentsData.totalStudents);
+        }
+
+        // 3. Fetch Attendance Sessions
         const attendanceRes = await fetch(
           `${base_url}/attendance/course/${courseId}`,
-          { credentials: "include" }
+          { credentials: "include" },
         );
         const attendanceData = await attendanceRes.json();
         if (!attendanceData.success)
           throw new Error(
-            attendanceData.message || "Failed to fetch attendance"
+            attendanceData.message || "Failed to fetch attendance",
           );
 
         const formattedAttendance = attendanceData.data.map((item) => ({
@@ -73,28 +89,31 @@ const CourseDetails = () => {
         setAttendance(formattedAttendance);
       } catch (err) {
         console.error(err);
-        setError("Failed to load course details. Please try again.");
+        setError("Failed to load details. Please try again.");
       } finally {
         setLoading(false);
       }
     };
 
-    // Reload when modal creates new attendance
     fetchCourseDetails();
   }, [courseId, base_url, isModalOpen, tableRefreshKey]);
 
   const reversedAttendance = [...attendance].reverse();
 
-  // --- NEW HANDLER ---
   const handleAttendanceCreated = () => {
-    // 1. Refresh table data
     setTableRefreshKey((prev) => prev + 1);
-    // 2. Switch to table view to see the new column
     setShowAttendanceTable(true);
   };
 
-  if (loading) return <p>Loading course details...</p>;
-  if (error) return <p className="error-message">{error}</p>;
+  if (loading) return <LoadingPage message="Loading course details..." />;
+  if (error)
+    return (
+      <ErrorPage
+        message={error}
+        title="Failed to Load Course"
+        onRetry={() => window.location.reload()}
+      />
+    );
   if (!course) return <p>Course not found.</p>;
 
   return (
@@ -113,11 +132,6 @@ const CourseDetails = () => {
             <h1 className="course-title">{course.title}</h1>
             <p className="course-meta">By {course.instructor}</p>
           </div>
-
-          <button className="edit-button">
-            <Edit2 size={20} />
-            Edit
-          </button>
         </div>
 
         {/* --- CONDITIONAL VIEW --- */}
@@ -157,7 +171,7 @@ const CourseDetails = () => {
                 </div>
                 <div className="info-content">
                   <p className="info-label">Students</p>
-                  <p className="info-value">{attendance.length} Enrolled</p>
+                  <p className="info-value">{totalStudents} Enrolled</p>
                 </div>
               </div>
 
@@ -191,9 +205,10 @@ const CourseDetails = () => {
                     <div key={att.id}>
                       {isLatest ? (
                         <div
+                          onClick={() => setShowQRCode(!showQRCode)}
                           className={`attendance-card ${
                             att.highlighted ? "highlighted" : ""
-                          }`}
+                          } clickable`}
                         >
                           <button onClick={() => setShowQRCode(!showQRCode)}>
                             <div className="attendance-date">
@@ -259,7 +274,6 @@ const CourseDetails = () => {
             Create Attendance
           </button>
 
-          {/* NEW BUTTON TO TOGGLE TABLE */}
           <button
             className="btn btn-secondary"
             onClick={() => setShowAttendanceTable(!showAttendanceTable)}
@@ -268,7 +282,10 @@ const CourseDetails = () => {
             {showAttendanceTable ? "View Dashboard" : "Mark Attendance"}
           </button>
 
-          <button className="btn btn-secondary">
+          <button
+            className="btn btn-secondary"
+            onClick={() => navigate("/admin/analytics")}
+          >
             <BarChart3 size={18} />
             Analytics
           </button>
@@ -278,7 +295,7 @@ const CourseDetails = () => {
         <CreateAttendanceModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onSuccess={handleAttendanceCreated} // <-- Pass this!
+          onSuccess={handleAttendanceCreated}
           courseTitle={course.title}
         />
       </div>

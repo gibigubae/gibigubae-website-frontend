@@ -1,20 +1,26 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import "./Auth.css"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "./Auth.css";
+import ErrorPage from "../Components/ErrorPage";
 
 const Login = () => {
-  const navigate = useNavigate()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
- const apiUrl = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  // Clear any stale role when the login page mounts
+  useEffect(() => {
+    localStorage.removeItem("userRole");
+  }, []);
   const handleLogin = async (e) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
       // Replace with your actual API endpoint
@@ -28,34 +34,32 @@ const Login = () => {
           password,
         }),
         credentials: "include",
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || "Login failed")
-        return
+        setError(data.message || "Login failed");
+        return;
       }
-      // console.log("full response",data)
+
       const role = data.data?.role;
       // Store token and role
       // localStorage.setItem("token", data.token)
-      localStorage.setItem("userRole", role)
+      localStorage.setItem("userRole", role);
 
-      // Admin routing is temporarily disabled to focus on the student frontend build.
       if (role === "admin" || role === "super_admin") {
-        navigate("/admin/courses")
+        navigate("/admin/courses");
       } else {
-        navigate("/student/courses")
+        navigate("/student/courses");
       }
-
     } catch (err) {
-      setError("An error occurred. Please try again.")
-      console.error("Login error:", err)
+      setError("An error occurred. Please try again.");
+      console.error("Login error:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="auth-container">
@@ -72,8 +76,8 @@ const Login = () => {
             </div>
             <h2 className="welcome-title">Welcome back!</h2>
             <p className="welcome-message">
-              Log in to your account to access your courses, track attendance, and manage your academic progress. We're
-              glad to see you again!
+              Log in to your account to access your courses, track attendance,
+              and manage your academic progress. We're glad to see you again!
             </p>
           </div>
         </div>
@@ -83,7 +87,7 @@ const Login = () => {
           <div className="auth-form">
             <h1 className="auth-title">Login</h1>
 
-            {error && <div className="error-message">{error}</div>}
+            {error && <ErrorPage compact title="Login Error" message={error} />}
 
             <form onSubmit={handleLogin}>
               <div className="form-group">
@@ -123,7 +127,7 @@ const Login = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

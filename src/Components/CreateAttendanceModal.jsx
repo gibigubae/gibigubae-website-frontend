@@ -10,14 +10,13 @@ const CreateAttendanceModal = ({ isOpen, onClose, onSuccess, courseTitle }) => {
   const [loading, setLoading] = useState(false);
 
   const base_url = import.meta.env.VITE_API_URL;
-  const { courseId } = useParams(); // Using params from URL
+  const { courseId } = useParams();
 
   const handleCreateAttendance = async () => {
     setError("");
     setLoading(true);
 
     try {
-      // Based on your prompt: {{local_base_url}}/attendance/4 (where 4 is courseId)
       const response = await fetch(`${base_url}/attendance/`, {
         method: "POST",
         credentials: "include",
@@ -25,7 +24,7 @@ const CreateAttendanceModal = ({ isOpen, onClose, onSuccess, courseTitle }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          courseId: courseId, // Sending courseId in body as well per your example
+          courseId: courseId,
           minutes: startTime,
         }),
       });
@@ -38,10 +37,8 @@ const CreateAttendanceModal = ({ isOpen, onClose, onSuccess, courseTitle }) => {
 
       setSuccess(true);
 
-      // Trigger parent refresh immediately so the new column appears
       if (onSuccess) onSuccess();
 
-      // Close modal after delay
       setTimeout(() => {
         setSuccess(false);
         setStartTime(10);
@@ -58,7 +55,7 @@ const CreateAttendanceModal = ({ isOpen, onClose, onSuccess, courseTitle }) => {
   const handleTimeChange = (e) => {
     const value = Math.min(
       Math.max(Number.parseInt(e.target.value) || 0, 0),
-      120
+      120,
     );
     setStartTime(value);
   };

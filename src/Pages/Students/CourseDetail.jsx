@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AttendanceCard from "../../Components/AttendanceCard";
 import RecordAttendanceModal from "../../Components/RecordAttendanceModal";
-import StudentNavBar from "./StudentNavBar";
 import "../../styles/CourseDetail.css";
+import LoadingPage from "../../Components/LoadingPage";
+import ErrorPage from "../../Components/ErrorPage";
 
 const CourseDetail = () => {
   const { id: courseId } = useParams();
@@ -58,7 +59,7 @@ const CourseDetail = () => {
             };
             const timeStart = startDate.toLocaleTimeString(
               "en-US",
-              timeOptions
+              timeOptions,
             );
             const timeEnd = endDate.toLocaleTimeString("en-US", timeOptions);
 
@@ -103,8 +104,14 @@ const CourseDetail = () => {
     fetchData();
   }, [base_url, courseId]);
 
-  if (loading) return <p>Loading...</p>;
-  if (!course) return <p>Course not found</p>;
+  if (loading) return <LoadingPage message="Loading course..." />;
+  if (!course)
+    return (
+      <ErrorPage
+        title="Course Not Found"
+        message="The requested course could not be found."
+      />
+    );
 
   // Find the latest attendance record that is NOT 'present' and NOT 'expired'
   // This assumes the latest record in the sorted array is the one to check.
@@ -145,8 +152,8 @@ const CourseDetail = () => {
             rec.id === selectedAttendance.id
               ? // Assuming API returns a status in data.data.status, otherwise hardcode 'present'
                 { ...rec, status: data.data.status || "present" }
-              : rec
-          )
+              : rec,
+          ),
         );
         // The modal will close after the success message in RecordAttendanceModal.jsx
       } else {
@@ -161,8 +168,6 @@ const CourseDetail = () => {
 
   return (
     <>
-      <StudentNavBar />
-
       <div className="course-detail-container">
         <div className="course-detail-header">
           {/* ... (Breadcrumb and Title remain the same) ... */}

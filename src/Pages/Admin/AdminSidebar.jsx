@@ -6,6 +6,7 @@ import {
   Users,
   GraduationCap,
   LogOut,
+  BarChart3,
 } from "lucide-react";
 import "../../styles/AdminSidebar.css";
 
@@ -73,6 +74,15 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
         >
           <GraduationCap size={20} />
           {!collapsed && <span>Enroll Students</span>}
+        </li>
+
+        <li
+          onClick={() => navigate("/admin/analytics")}
+          className={isActive("/admin/analytics") ? "active" : ""}
+          title={collapsed ? "Analytics" : ""}
+        >
+          <BarChart3 size={20} />
+          {!collapsed && <span>Analytics</span>}
         </li>
       </ul>
 

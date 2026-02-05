@@ -14,6 +14,7 @@ import SignUp from "./Pages/SignUp";
 import CourseList from "./Pages/Students/CourseList";
 import CourseDetail from "./Pages/Students/CourseDetail";
 import RecordAttendanceModal from "./Components/RecordAttendanceModal";
+import StudentLayout from "./Pages/Students/StudentLayout";
 
 // Admin Layout & Pages
 import AdminLayout from "./Pages/Admin/AdminLayout";
@@ -22,64 +23,80 @@ import CreateCourses from "./Pages/Admin/CreateCourses";
 import CourseDetails from "./Pages/Admin/CourseDetails";
 import StudentList from "./Pages/Admin/StudentList";
 import EnrollmentManager from "./Pages/Admin/EnrollmentManager";
+import AnalyticsOverview from "./Pages/Admin/AnalyticsOverview";
+import ErrorBoundary from "./Components/ErrorBoundary";
 
-// Protected Route Component
+// Protected Route Component (string-only roles)
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("userRole");
 
-  // 1. Check Token
-  if (!token) {
+  // Not logged in
+  if (!userRole) {
     return <Navigate to="/" replace />;
   }
 
-  // 2. Check Role (if specific role required)
-  if (requiredRole && userRole !== requiredRole) {
-    return <Navigate to="/" replace />;
+  if (requiredRole === "admin") {
+    if (userRole !== "admin" && userRole !== "super_admin") {
+      return <Navigate to="/" replace />;
+    }
+  } else if (requiredRole) {
+    if (userRole !== requiredRole) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return children;
 };
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <Routes>
-        {/* --- Public Routes --- */}
-        <Route path="/" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          {/* --- Public Routes --- */}
+          <Route path="/" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
 
-        {/* --- Student Routes --- */}
-        {/* You can wrap these in a StudentLayout later if needed */}
-        <Route path="/student/courses" element={<CourseList />} />
-        <Route path="/student/course/:id" element={<CourseDetail />} />
-        <Route path="/student/attendance" element={<RecordAttendanceModal />} />
+          {/* --- Student Routes (Wrapped in Layout, protected) --- */}
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <StudentLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="courses" element={<CourseList />} />
+            <Route path="course/:id" element={<CourseDetail />} />
+            <Route path="attendance" element={<RecordAttendanceModal />} />
+            <Route index element={<Navigate to="courses" replace />} />
+          </Route>
 
-        {/* --- Admin Routes (Wrapped in Layout) --- */}
-        <Route
-          path="/admin"
-          element={
-            // <ProtectedRoute requiredRole="admin"> {/* Uncomment to enable protection */}
-            <AdminLayout />
-            // </ProtectedRoute>
-          }
-        >
-          {/* Nested Routes - These render inside the <Outlet /> of AdminLayout */}
-          <Route path="courses" element={<CourseLists />} />
-          <Route path="create-course" element={<CreateCourses />} />
-          <Route path="course/:courseId" element={<CourseDetails />} />
-          <Route path="student-management" element={<StudentList />} />
-          <Route path="Enroll-students" element={<EnrollmentManager />} />
+          {/* --- Admin Routes (Wrapped in Layout, protected) --- */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            {/* Nested Routes - These render inside the <Outlet /> of AdminLayout */}
+            <Route path="courses" element={<CourseLists />} />
+            <Route path="create-course" element={<CreateCourses />} />
+            <Route path="course/:courseId" element={<CourseDetails />} />
+            <Route path="student-management" element={<StudentList />} />
+            <Route path="Enroll-students" element={<EnrollmentManager />} />
+            <Route path="analytics" element={<AnalyticsOverview />} />
 
-          {/* Default redirect for /admin */}
-          <Route index element={<Navigate to="courses" replace />} />
-        </Route>
+            {/* Default redirect for /admin */}
+            <Route index element={<Navigate to="courses" replace />} />
+          </Route>
 
-        {/* --- Fallback Route --- */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+          {/* --- Fallback Route --- */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
-
-export default App;

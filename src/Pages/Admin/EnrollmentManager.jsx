@@ -8,6 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 import "../../styles/EnrollmentManager.css";
+import LoadingPage from "../../Components/LoadingPage";
 
 const EnrollmentManager = () => {
   const base_url = import.meta.env.VITE_API_URL;
@@ -60,7 +61,7 @@ const EnrollmentManager = () => {
           `${base_url}/course/students/${selectedCourseId}`,
           {
             credentials: "include",
-          }
+          },
         );
         const data = await response.json();
         if (data.success) {
@@ -86,7 +87,7 @@ const EnrollmentManager = () => {
       s.id_number.toLowerCase().includes(lowerSearch);
 
     const available = allStudents.filter(
-      (s) => !enrolledIds.has(s.id) && matchesSearch(s)
+      (s) => !enrolledIds.has(s.id) && matchesSearch(s),
     );
 
     const enrolled = enrolledStudents.filter((s) => matchesSearch(s));
@@ -129,7 +130,7 @@ const EnrollmentManager = () => {
   const handleUnenroll = async (studentId) => {
     // 1. Confirmation
     const confirmed = window.confirm(
-      "Are you sure you want to remove this student from the course?"
+      "Are you sure you want to remove this student from the course?",
     );
     if (!confirmed) return;
 
@@ -197,7 +198,7 @@ const EnrollmentManager = () => {
         </div>
 
         {loading ? (
-          <div className="loading-state">Loading data...</div>
+          <LoadingPage message="Loading enrollment data..." />
         ) : !selectedCourseId ? (
           <div className="empty-state">
             <Users size={48} />

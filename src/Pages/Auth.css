@@ -1,4 +1,6 @@
-/* Auth Container */
+/* =========================================
+   1. Global Container & Layout
+   ========================================= */
 .auth-container {
   min-height: 100vh;
   display: flex;
@@ -18,7 +20,9 @@
   align-items: center;
 }
 
-/* Form Section */
+/* =========================================
+   2. Form Section Styles
+   ========================================= */
 .auth-form-section {
   display: flex;
   justify-content: center;
@@ -35,7 +39,6 @@
 }
 
 .auth-title {
-  /* Reduced font size for mobile */
   font-size: 24px;
   font-weight: 700;
   color: #1a1a1a;
@@ -43,7 +46,9 @@
   letter-spacing: -0.5px;
 }
 
-/* Form Group */
+/* =========================================
+   3. General Input Styles
+   ========================================= */
 .form-group {
   margin-bottom: 16px;
 }
@@ -79,7 +84,9 @@
   color: #999;
 }
 
-/* Phone Input Wrapper */
+/* =========================================
+   4. Phone Input Specifics
+   ========================================= */
 .phone-input-wrapper {
   display: flex;
   align-items: center;
@@ -119,38 +126,66 @@
   box-shadow: none;
 }
 
-/* File Upload Button */
+/* =========================================
+   5. File Upload Styling (Updated)
+   ========================================= */
 .file-upload-group {
   position: relative;
 }
 
-.file-upload-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* The container (gray box) */
+.file-input {
   width: 100%;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, #d4a574 0%, #c9935a 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
+  background-color: #f1f5f9; /* Light gray background */
+  border: 1px solid transparent;
+  border-radius: 12px; /* Large rounded corners */
+  padding: 10px; /* Spacing inside the gray box */
   font-size: 14px;
-  font-weight: 600;
+  color: #4b5563; /* 'No file chosen' text color */
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(212, 165, 116, 0.2);
+  box-sizing: border-box;
+  display: block; /* Ensures it is visible */
 }
 
-.file-upload-label:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
+.file-input:hover {
+  background-color: #e2e8f0;
 }
 
-.file-input {
-  display: none;
+/* The 'Upload File' Button inside the input */
+.file-input::file-selector-button {
+  background-color: #ffffff;
+  color: #2563eb; /* Blue text */
+  border: 1px solid #e2e8f0; /* Subtle border */
+  border-radius: 6px;
+  padding: 6px 16px;
+  margin-right: 12px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  /* Upload Icon (SVG) */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%232563eb'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' /%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 8px center;
+  background-size: 14px;
+  padding-left: 28px; /* Space for the icon */
 }
 
-/* Auth Button */
+.file-input::file-selector-button:hover {
+  background-color: #f8fafc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.file-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* =========================================
+   6. Buttons & Links
+   ========================================= */
 .auth-button {
   width: 100%;
   padding: 14px 16px;
@@ -186,7 +221,6 @@
   cursor: not-allowed;
 }
 
-/* Auth Link */
 .auth-link {
   text-align: center;
   margin-top: 16px;
@@ -206,7 +240,9 @@
   text-decoration: underline;
 }
 
-/* Welcome Section */
+/* =========================================
+   7. Welcome Section (Right Side)
+   ========================================= */
 .auth-welcome-section {
   display: flex;
   justify-content: center;
@@ -243,11 +279,6 @@
   text-align: center;
 }
 
-/* Hide welcome text on small screens; show only the logo */
-/* .welcome-title {
-  display: none;
-} */
-
 .welcome-message {
   display: none;
 }
@@ -264,7 +295,9 @@
   color: #0052a3;
 }
 
-/* Error Message */
+/* =========================================
+   8. Utility & Error Messages
+   ========================================= */
 .error-message {
   background: #fee;
   color: #c00;
@@ -275,7 +308,11 @@
   border-left: 4px solid #c00;
 }
 
-/* Tablet and larger screens: display two-column layout */
+/* =========================================
+   9. Media Queries (Responsive)
+   ========================================= */
+
+/* Tablet and larger screens */
 @media (min-width: 640px) {
   .auth-form {
     max-width: 380px;
@@ -286,7 +323,6 @@
   }
 
   .form-row {
-    /* Stack to two columns on tablet+ */
     flex-direction: row;
   }
 
@@ -315,7 +351,6 @@
     font-size: 18px;
   }
 
-  /* Restore welcome text on tablet and larger */
   .welcome-title {
     display: block;
     font-size: 24px;
@@ -331,7 +366,7 @@
   }
 }
 
-/* Desktop: full two-column layout with proper spacing */
+/* Desktop: full two-column layout */
 @media (min-width: 768px) {
   .auth-container {
     padding: 20px;
