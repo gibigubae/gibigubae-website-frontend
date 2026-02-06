@@ -16,7 +16,7 @@ export const authService = {
     const response = await apiClient.post('/sign-in', { email, password });
     return response.data;
   },
-
+ 
   /**
    * Sign up a new user
    * @param {Object|FormData} userData - User registration data
@@ -29,6 +29,15 @@ export const authService = {
       : {};
     
     const response = await apiClient.post('/sign-up', userData, config);
+    return response.data;
+  },
+
+  /**
+   * Log out the current user
+   * @returns {Promise} Response from logout endpoint
+   */
+  logout: async () => {
+    const response = await apiClient.post('/logout');
     return response.data;
   },
 };

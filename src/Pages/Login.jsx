@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLogin } from "../hooks/useAuth";
@@ -26,7 +24,7 @@ const Login = () => {
       }
     },
   });
-
+ 
   // Clear any stale role when the login page mounts
   useEffect(() => {
     localStorage.removeItem("userRole");

@@ -27,7 +27,7 @@ createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <App />
       {/* React Query DevTools - only visible in development */}
-      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+      <ReactQueryDevtools initialIsOpen={false} position="top-right" />
     </QueryClientProvider>
   </StrictMode>,
 )

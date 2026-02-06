@@ -8,16 +8,27 @@ import {
   LogOut,
   BarChart3,
 } from "lucide-react";
+import { useLogout } from "../../hooks/useAuth";
 import "../../styles/AdminSidebar.css";
 
 const AdminSidebar = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const logoutMutation = useLogout({
+    onSuccess: () => {
+      localStorage.removeItem("userRole");
+      navigate("/");
+    },
+    onError: (error) => {
+      console.error("Logout error:", error);
+      localStorage.removeItem("userRole");
+      navigate("/");
+    },
+  });
+
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userRole");
-    navigate("/");
+    logoutMutation.mutate();
   };
 
   // Helper to check active state

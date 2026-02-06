@@ -32,7 +32,7 @@ const SignUp = () => {
       localStorage.setItem("userRole", data?.data?.role || "student");
       navigate("/student/courses");
     },
-  });
+  }); 
 
   // Clear any stale role when the signup page mounts
   useEffect(() => {
@@ -101,7 +101,7 @@ const SignUp = () => {
     // Call the signup mutation
     signup(formDataWithFile);
   };
-
+ 
   return (
     <div className="auth-container">
       <div className="auth-content">

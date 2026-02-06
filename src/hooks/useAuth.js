@@ -12,7 +12,7 @@ export const useLogin = (options = {}) => {
     ...options,
   });
 };
-
+ 
 /**
  * Hook for user signup
  * @param {Object} options - Optional callbacks (onSuccess, onError)
@@ -21,6 +21,18 @@ export const useLogin = (options = {}) => {
 export const useSignup = (options = {}) => {
   return useMutation({
     mutationFn: (userData) => authService.signUp(userData),
+    ...options,
+  });
+};
+
+/**
+ * Hook for user logout
+ * @param {Object} options - Optional callbacks (onSuccess, onError)
+ * @returns {Object} Mutation object with mutate, isLoading, error, etc.
+ */
+export const useLogout = (options = {}) => {
+  return useMutation({
+    mutationFn: () => authService.logout(),
     ...options,
   });
 };
