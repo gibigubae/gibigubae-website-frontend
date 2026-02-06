@@ -35,6 +35,16 @@ export const enrollmentService = {
     const response = await apiClient.delete('/enrollment/', { data: enrollmentData });
     return response.data;
   },
+
+  /**
+   * Self-enroll in a course (student enrolls themselves)
+   * @param {number} courseId - Course ID to enroll in
+   * @returns {Promise} Response confirming enrollment
+   */
+  selfEnroll: async (courseId) => {
+    const response = await apiClient.post('/enrollment/self', { courseId });
+    return response.data;
+  },
 };
 
 export default enrollmentService;

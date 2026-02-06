@@ -6,6 +6,7 @@ export const courseKeys = {
   all: ['courses'],
   lists: () => [...courseKeys.all, 'list'],
   my: () => [...courseKeys.all, 'my'],
+  studentCourses: () => [...courseKeys.all, 'student-courses'],
   detail: (id) => [...courseKeys.all, 'detail', id],
   students: (courseId) => [...courseKeys.all, 'students', courseId],
 };
@@ -29,6 +30,17 @@ export const useMyCourses = () => {
   return useQuery({
     queryKey: courseKeys.my(),
     queryFn: courseService.getMyCourses,
+  });
+};
+
+/**
+ * Hook to get all available courses for student (organized by semester)
+ * @returns {Object} Query object with data, isLoading, error, etc.
+ */
+export const useStudentCourses = () => {
+  return useQuery({
+    queryKey: courseKeys.studentCourses(),
+    queryFn: courseService.getStudentCourses,
   });
 };
 

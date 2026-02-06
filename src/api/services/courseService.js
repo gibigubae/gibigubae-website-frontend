@@ -25,6 +25,15 @@ export const courseService = {
   },
 
   /**
+   * Get all available courses for student (organized by semester with enrollment status)
+   * @returns {Promise} Response with student info and courses grouped by semester
+   */
+  getStudentCourses: async () => {
+    const response = await apiClient.get('/student/courses');
+    return response.data;
+  },
+
+  /**
    * Get course by ID
    * @param {string|number} id - Course ID
    * @returns {Promise} Response with course details

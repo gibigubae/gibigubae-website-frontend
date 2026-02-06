@@ -68,3 +68,21 @@ export const useUnenrollStudent = () => {
     },
   });
 };
+
+/**
+ * Hook for student self-enrollment
+ * @returns {Object} Mutation object
+ */
+export const useSelfEnroll = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: enrollmentService.selfEnroll,
+    onSuccess: () => {
+      // Invalidate student courses to refresh enrollment status
+      queryClient.invalidateQueries({ queryKey: courseKeys.studentCourses() });
+      // Also invalidate my courses
+      queryClient.invalidateQueries({ queryKey: courseKeys.my() });
+    },
+  });
+};

@@ -1,4 +1,4 @@
-import { Edit2, Eye, Trash2 } from "lucide-react";
+import { Edit2, Eye, Trash2, UserPlus } from "lucide-react";
 import "../styles/CourseCard.css";
 
 const CourseCard = ({
@@ -6,7 +6,10 @@ const CourseCard = ({
   onEdit,
   onDelete,
   onView,
+  onEnroll,
   userType = "student",
+  alreadyEnrolled = true,
+  isEnrolling = false,
 }) => {
   const handleDeleteClick = async () => {
     try {
@@ -14,6 +17,22 @@ const CourseCard = ({
     } catch (error) {
       console.error("Delete failed", error);
     }
+  };
+
+  const handleEnrollClick = () => {
+    if (onEnroll) {
+      onEnroll(course.id);
+    }
+  };
+
+  // Show alert if disabled view button is clicked
+  const handleViewClick = (e) => {
+    if (userType === "student" && !alreadyEnrolled) {
+      e.preventDefault();
+      alert("Please enroll first");
+      return;
+    }
+    onView(course.id);
   };
 
   return (
@@ -32,6 +51,21 @@ const CourseCard = ({
 
       {/* Course Description */}
       <p className="course-description">{course.description}</p>
+
+      {/* Enrollment Status */}
+      {userType === "student" && (
+        <div style={{ marginTop: "0.5rem", fontSize: "0.85rem" }}>
+          {alreadyEnrolled ? (
+            <span style={{ color: "#4CAF50", fontWeight: "bold" }}>
+              ✓ Enrolled
+            </span>
+          ) : (
+            <span style={{ color: "#FF9800", fontStyle: "italic" }}>
+              Not enrolled
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="course-actions">
@@ -59,9 +93,29 @@ const CourseCard = ({
           </>
         )}
 
+        {/* Enroll button for students who haven't enrolled yet */}
+        {userType === "student" && !alreadyEnrolled && onEnroll && (
+          <button
+            className="action-btn enroll-btn"
+            onClick={handleEnrollClick}
+            disabled={isEnrolling}
+            aria-label="Enroll in course"
+            title="Enroll"
+            style={{
+              backgroundColor: "#4CAF50",
+              color: "white",
+            }}
+          >
+            <UserPlus size={18} />
+            <span className="btn-text">
+              {isEnrolling ? "Enrolling..." : "Enroll"}
+            </span>
+          </button>
+        )}
+
         <button
           className="action-btn view-btn"
-          onClick={() => onView(course.id)}
+          onClick={handleViewClick}
           aria-label="View course"
           title="View"
         >
