@@ -53,7 +53,7 @@ export const useCreateAttendance = () => {
 };
 
 /**
- * Hook for admin to mark attendance
+ * Hook for admin to mark attendance with optimistic updates
  * @returns {Object} Mutation object
  */
 export const useMarkAttendanceAdmin = () => {
@@ -61,8 +61,63 @@ export const useMarkAttendanceAdmin = () => {
 
   return useMutation({
     mutationFn: attendanceService.markAttendanceAdmin,
-    onSuccess: () => {
-      // Invalidate all attendance queries to refetch updated data
+    
+    // Optimistic update: Update the cache immediately before the mutation
+    onMutate: async (variables) => {
+      const { studentId, attendanceId, present } = variables;
+      
+      // Cancel any outgoing refetches to prevent overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: attendanceKeys.all });
+      
+      // Snapshot the previous value for rollback
+      const previousData = queryClient.getQueriesData({ queryKey: attendanceKeys.all });
+      
+      // Optimistically update all matching queries
+      queryClient.setQueriesData({ queryKey: attendanceKeys.all }, (old) => {
+        if (!old?.success || !old?.data) return old;
+        
+        // Update the attendance data
+        const updatedData = old.data.map((session) => {
+          if (session.id === attendanceId) {
+            return {
+              ...session,
+              students: session.students.map((student) => {
+                if (student.id === studentId) {
+                  return {
+                    ...student,
+                    StudentAttendance: {
+                      ...student.StudentAttendance,
+                      present: present,
+                    },
+                  };
+                }
+                return student;
+              }),
+            };
+          }
+          return session;
+        });
+        
+        return { ...old, data: updatedData };
+      });
+      
+      // Return context with previous data for rollback
+      return { previousData };
+    },
+    
+    // On error, rollback to previous data
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        // Restore all previous queries
+        context.previousData.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      console.error("Failed to mark attendance", err);
+    },
+    
+    // Always refetch after error or success to ensure cache is in sync
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: attendanceKeys.all });
     },
   });
