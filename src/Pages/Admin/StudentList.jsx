@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Edit2, Trash2, X, Save } from "lucide-react";
+import { Search, Edit2, Trash2, X, Save, Eye } from "lucide-react";
 import Swal from "sweetalert2";
 import { useStudents, useUpdateStudent, useDeleteStudent } from "../../hooks/useStudents";
 import "../../styles/StudentList.css";
@@ -17,6 +17,7 @@ const StudentList = () => {
 
   // State for Editing
   const [editingStudent, setEditingStudent] = useState(null);
+  const [viewingStudent, setViewingStudent] = useState(null);
   const [editForm, setEditForm] = useState({
     department: "",
     year: "",
@@ -188,7 +189,7 @@ const StudentList = () => {
                   <th>Department</th>
                   <th>Year</th>
                   <th>BlockNumber/Room</th>
-                  <th>Edit/Delete</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -207,6 +208,13 @@ const StudentList = () => {
                         {student.room_number || "-"}
                       </td>
                       <td className="action-cell">
+                        <button
+                          className="btn-icon view"
+                          onClick={() => setViewingStudent(student)}
+                          title="View Details"
+                        >
+                          <Eye size={18} />
+                        </button>
                         <button
                           className="btn-icon edit"
                           onClick={() => openEditModal(student)}
@@ -235,6 +243,131 @@ const StudentList = () => {
             </table>
           </div>
           </>
+        )}
+
+        {/* Detail View Modal */}
+        {viewingStudent && (
+          <div
+            className="modal-overlay"
+            onClick={() => setViewingStudent(null)}
+          >
+            <div className="modal-content detail-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Student Details</h2>
+                <button
+                  className="close-btn"
+                  onClick={() => setViewingStudent(null)}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="detail-content">
+                {/* Personal Information */}
+                <div className="detail-section">
+                  <h3 className="section-title">Personal Information</h3>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <span className="detail-label">ID Number:</span>
+                      <span className="detail-value">{viewingStudent.id_number}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">First Name:</span>
+                      <span className="detail-value">{viewingStudent.first_name}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Father Name:</span>
+                      <span className="detail-value">{viewingStudent.father_name}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Grandfather Name:</span>
+                      <span className="detail-value">{viewingStudent.grand_father_name}</span>
+                    </div>
+                    {viewingStudent.christian_name && (
+                      <div className="detail-item">
+                        <span className="detail-label">Christian Name:</span>
+                        <span className="detail-value">{viewingStudent.christian_name}</span>
+                      </div>
+                    )}
+                    <div className="detail-item">
+                      <span className="detail-label">Gender:</span>
+                      <span className="detail-value">{viewingStudent.gender}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Information */}
+                <div className="detail-section">
+                  <h3 className="section-title">Contact Information</h3>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <span className="detail-label">Email:</span>
+                      <span className="detail-value">{viewingStudent.email}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Phone:</span>
+                      <span className="detail-value">+251 {viewingStudent.phone_number}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Academic Information */}
+                <div className="detail-section">
+                  <h3 className="section-title">Academic Information</h3>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <span className="detail-label">Department:</span>
+                      <span className="detail-value">{viewingStudent.department || '-'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Year:</span>
+                      <span className="detail-value">{viewingStudent.year || '-'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Status:</span>
+                      <span className={`status-badge ${viewingStudent.is_verified ? 'verified' : 'pending'}`}>
+                        {viewingStudent.is_verified ? 'Verified' : 'Pending Verification'}
+                      </span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Graduated:</span>
+                      <span className="detail-value">{viewingStudent.is_graduated ? 'Yes' : 'No'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Housing Information */}
+                <div className="detail-section">
+                  <h3 className="section-title">Housing Information</h3>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <span className="detail-label">Dorm Block:</span>
+                      <span className="detail-value">{viewingStudent.dorm_block ? `Block ${viewingStudent.dorm_block}` : '-'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Room Number:</span>
+                      <span className="detail-value">{viewingStudent.room_number || '-'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Timestamps */}
+                <div className="detail-section">
+                  <h3 className="section-title">Account Information</h3>
+                  <div className="detail-grid">
+                    <div className="detail-item">
+                      <span className="detail-label">Created:</span>
+                      <span className="detail-value">{new Date(viewingStudent.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Last Updated:</span>
+                      <span className="detail-value">{new Date(viewingStudent.updated_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Edit Modal */}
