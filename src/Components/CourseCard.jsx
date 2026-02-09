@@ -1,5 +1,6 @@
 import { Edit2, Eye, Trash2, UserPlus } from "lucide-react";
 import "../styles/CourseCard.css";
+import Swal from "sweetalert2";
 
 const CourseCard = ({
   course,
@@ -29,7 +30,11 @@ const CourseCard = ({
   const handleViewClick = (e) => {
     if (userType === "student" && !alreadyEnrolled) {
       e.preventDefault();
-      alert("Please enroll first");
+      Swal.fire({
+        icon: "info",
+        title: "Please Enroll",
+        text: "Please enroll first",
+      });
       return;
     }
     onView(course.id);

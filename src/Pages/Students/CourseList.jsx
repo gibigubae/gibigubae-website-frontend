@@ -6,6 +6,7 @@ import CourseCard from "../../Components/CourseCard";
 import "../../styles/CourseList.css";
 import LoadingPage from "../../Components/LoadingPage";
 import ErrorPage from "../../Components/ErrorPage";
+import Swal from "sweetalert2";
 
 const CourseList = () => {
   const navigate = useNavigate();
@@ -70,7 +71,13 @@ const CourseList = () => {
     navigate(`/student/course/${courseId}`);
   };
 
-  const handleEdit = () => alert("Students cannot edit courses.");
+  const handleEdit = () => {
+    Swal.fire({
+      icon: "info",
+      title: "Action Restricted",
+      text: "Students cannot edit courses.",
+    });
+  };
 
   const handleEnroll = (courseId) => {
     enrollMutation.mutate(courseId, {
@@ -78,7 +85,11 @@ const CourseList = () => {
         // Course list will auto-refresh due to query invalidation
       },
       onError: (error) => {
-        alert(error?.response?.data?.message || "Failed to enroll in course");
+        Swal.fire({
+          icon: "error",
+          title: "Enrollment Failed",
+          text: error?.response?.data?.message || "Failed to enroll in course",
+        });
       },
     });
   };
@@ -88,7 +99,7 @@ const CourseList = () => {
       <div className="course-list-container">
         <div className="course-list-header">
           <h1 className="page-title">Courses</h1>
-          
+
           {/* {data?.student && (
             <div style={{ marginBottom: "1rem", color: "#666" }}>
               <p><strong>Student:</strong> {data.student.name} (Year {data.student.year})</p>
@@ -116,7 +127,9 @@ const CourseList = () => {
                 }`}
                 onClick={() => setSelectedSemester(semester)}
               >
-                {semester === "all" ? "All" : `Semester ${semester.split("_")[1]}`}
+                {semester === "all"
+                  ? "All"
+                  : `Semester ${semester.split("_")[1]}`}
               </button>
             ))}
           </div>
@@ -141,7 +154,11 @@ const CourseList = () => {
         ) : isError ? (
           <ErrorPage
             title="Failed to Load Courses"
-            message={error?.response?.data?.message || error?.message || "Failed to load courses"}
+            message={
+              error?.response?.data?.message ||
+              error?.message ||
+              "Failed to load courses"
+            }
             onRetry={() => window.location.reload()}
           />
         ) : filteredCourses.length > 0 ? (

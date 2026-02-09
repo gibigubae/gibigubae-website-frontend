@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCourse } from "../../hooks/useCourses";
-import { useStudentAttendance, useMarkAttendanceStudent } from "../../hooks/useAttendance";
+import {
+  useStudentAttendance,
+  useMarkAttendanceStudent,
+} from "../../hooks/useAttendance";
 import AttendanceCard from "../../Components/AttendanceCard";
 import RecordAttendanceModal from "../../Components/RecordAttendanceModal";
 import "../../styles/CourseDetail.css";
 import LoadingPage from "../../Components/LoadingPage";
 import ErrorPage from "../../Components/ErrorPage";
+import Swal from "sweetalert2";
 
 const CourseDetail = () => {
   const { id: courseId } = useParams();
@@ -17,8 +21,16 @@ const CourseDetail = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Use React Query hooks for parallel data fetching
-  const { data: courseData, isLoading: courseLoading, error: courseError } = useCourse(courseId);
-  const { data: attendanceData, isLoading: attendanceLoading, error: attendanceError } = useStudentAttendance(courseId);
+  const {
+    data: courseData,
+    isLoading: courseLoading,
+    error: courseError,
+  } = useCourse(courseId);
+  const {
+    data: attendanceData,
+    isLoading: attendanceLoading,
+    error: attendanceError,
+  } = useStudentAttendance(courseId);
   const markAttendanceMutation = useMarkAttendanceStudent();
 
   // Combined loading and error states
@@ -33,14 +45,17 @@ const CourseDetail = () => {
           .map((rec) => {
             const rawDate = rec.attendance.date;
             const startDate = new Date(rawDate);
-            const endDate = new Date(startDate.getTime() + 16* 60000); // 16 minutes
+            const endDate = new Date(startDate.getTime() + 16 * 60000); // 16 minutes
 
             const timeOptions = {
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,
             };
-            const timeStart = startDate.toLocaleTimeString("en-US", timeOptions);
+            const timeStart = startDate.toLocaleTimeString(
+              "en-US",
+              timeOptions,
+            );
             const timeEnd = endDate.toLocaleTimeString("en-US", timeOptions);
 
             let status = "";
@@ -79,14 +94,17 @@ const CourseDetail = () => {
     return (
       <ErrorPage
         title="Error Loading Course"
-        message={error?.response?.data?.message || error?.message || "Failed to load course"}
+        message={
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to load course"
+        }
       />
     );
 
-
   // Get the most recent attendance record (the last one in the array after sorting)
   const mostRecentRecord = attendanceRecords[attendanceRecords.length - 1];
-  
+
   // Only make it clickable if the student is NOT present on it
   const isClickable = mostRecentRecord && mostRecentRecord.status !== "present";
 
@@ -112,9 +130,16 @@ const CourseDetail = () => {
           // React Query automatically refetches the attendance data
         },
         onError: (error) => {
-          alert(`Error: ${error?.response?.data?.message || error?.message || "Invalid code or system error."}`);
+          Swal.fire({
+            icon: "error",
+            title: "Attendance Error",
+            text:
+              error?.response?.data?.message ||
+              error?.message ||
+              "Invalid code or system error.",
+          });
         },
-      }
+      },
     );
   };
 

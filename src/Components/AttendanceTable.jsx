@@ -1,11 +1,17 @@
 import { useCourseStudents } from "../hooks/useCourses";
-import { useCourseAttendance, useMarkAttendanceAdmin } from "../hooks/useAttendance";
+import {
+  useCourseAttendance,
+  useMarkAttendanceAdmin,
+} from "../hooks/useAttendance";
 import "../styles/AttendanceTable.css";
+import Swal from "sweetalert2";
 
 const AttendanceTable = ({ courseId }) => {
   // Use React Query hooks for parallel data fetching
-  const { data: studentsData, isLoading: studentsLoading } = useCourseStudents(courseId);
-  const { data: sessionsData, isLoading: sessionsLoading } = useCourseAttendance(courseId);
+  const { data: studentsData, isLoading: studentsLoading } =
+    useCourseStudents(courseId);
+  const { data: sessionsData, isLoading: sessionsLoading } =
+    useCourseAttendance(courseId);
   const markAttendanceMutation = useMarkAttendanceAdmin();
 
   const isLoading = studentsLoading || sessionsLoading;
@@ -20,16 +26,23 @@ const AttendanceTable = ({ courseId }) => {
     const isPresent = newValue === "Present";
 
     // Use React Query mutation
-    markAttendanceMutation.mutate({
-      studentId: studentId,
-      attendanceId: attendanceId,
-      present: isPresent,
-    }, {
-      onError: (error) => {
-        console.error("Failed to mark attendance", error);
-        alert("Failed to update status.");
+    markAttendanceMutation.mutate(
+      {
+        studentId: studentId,
+        attendanceId: attendanceId,
+        present: isPresent,
       },
-    });
+      {
+        onError: (error) => {
+          console.error("Failed to mark attendance", error);
+          Swal.fire({
+            icon: "error",
+            title: "Update Failed",
+            text: "Failed to update status.",
+          });
+        },
+      },
+    );
   };
 
   const getStatus = (studentId, session) => {
@@ -88,7 +101,7 @@ const AttendanceTable = ({ courseId }) => {
                           handleStatusChange(
                             student.id,
                             session.id,
-                            e.target.value
+                            e.target.value,
                           )
                         }
                       >

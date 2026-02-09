@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "../styles/SharedFeedback.css";
+import Swal from "sweetalert2";
 
 const ErrorPage = ({
   title = "Something went wrong",
@@ -8,6 +9,27 @@ const ErrorPage = ({
   retryLabel = "Retry",
   compact = false,
 }) => {
+  // Show a SweetAlert2 notification when an error page mounts or updates
+  useEffect(() => {
+    const swalOptions = compact
+      ? {
+          toast: true,
+          position: "top-end",
+          icon: "error",
+          title,
+          text: message,
+          showConfirmButton: false,
+          timer: 4000,
+          timerProgressBar: true,
+        }
+      : {
+          icon: "error",
+          title,
+          text: message,
+        };
+
+    Swal.fire(swalOptions);
+  }, [title, message, compact]);
   if (compact) {
     return (
       <div className="error-inline" role="alert">

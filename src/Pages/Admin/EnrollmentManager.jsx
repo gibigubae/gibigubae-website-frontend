@@ -9,9 +9,14 @@ import {
 } from "lucide-react";
 import { useCourses } from "../../hooks/useCourses";
 import { useStudents } from "../../hooks/useStudents";
-import { useEnrolledStudents, useEnrollStudent, useUnenrollStudent } from "../../hooks/useEnrollment";
+import {
+  useEnrolledStudents,
+  useEnrollStudent,
+  useUnenrollStudent,
+} from "../../hooks/useEnrollment";
 import "../../styles/EnrollmentManager.css";
 import LoadingPage from "../../Components/LoadingPage";
+import Swal from "sweetalert2";
 
 const EnrollmentManager = () => {
   // UI States
@@ -21,8 +26,9 @@ const EnrollmentManager = () => {
   // Use React Query hooks
   const { data: coursesData, isLoading: coursesLoading } = useCourses();
   const { data: studentsData, isLoading: studentsLoading } = useStudents();
-  const { data: enrolledData, refetch: refetchEnrolled } = useEnrolledStudents(selectedCourseId);
-  
+  const { data: enrolledData, refetch: refetchEnrolled } =
+    useEnrolledStudents(selectedCourseId);
+
   const enrollMutation = useEnrollStudent();
   const unenrollMutation = useUnenrollStudent();
 
@@ -57,38 +63,63 @@ const EnrollmentManager = () => {
 
   // Handle Enrollment Action
   const handleEnroll = async (student) => {
-    enrollMutation.mutate({
-      studentId: student.id,
-      courseId: parseInt(selectedCourseId),
-    }, {
-      onSuccess: () => {
-        // Manually refetch to ensure UI updates
-        refetchEnrolled();
+    enrollMutation.mutate(
+      {
+        studentId: student.id,
+        courseId: parseInt(selectedCourseId),
       },
-      onError: (error) => {
-        alert(error?.response?.data?.message || error?.message || "Enrollment failed");
+      {
+        onSuccess: () => {
+          // Manually refetch to ensure UI updates
+          refetchEnrolled();
+        },
+        onError: (error) => {
+          Swal.fire({
+            icon: "error",
+            title: "Enrollment Failed",
+            text:
+              error?.response?.data?.message ||
+              error?.message ||
+              "Enrollment failed",
+          });
+        },
       },
-    });
+    );
   };
 
   const handleUnenroll = async (studentId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to remove this student from the course?",
-    );
-    if (!confirmed) return;
-
-    unenrollMutation.mutate({
-      studentId: studentId,
-      courseId: parseInt(selectedCourseId),
-    }, {
-      onSuccess: () => {
-        // Manually refetch to ensure UI updates
-        refetchEnrolled();
-      },
-      onError: (error) => {
-        alert(error?.response?.data?.message || error?.message || "Failed to remove enrollment");
-      },
+    const result = await Swal.fire({
+      title: "Remove student?",
+      text: "Are you sure you want to remove this student from the course?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, remove",
+      cancelButtonText: "Cancel",
     });
+    if (!result.isConfirmed) return;
+
+    unenrollMutation.mutate(
+      {
+        studentId: studentId,
+        courseId: parseInt(selectedCourseId),
+      },
+      {
+        onSuccess: () => {
+          // Manually refetch to ensure UI updates
+          refetchEnrolled();
+        },
+        onError: (error) => {
+          Swal.fire({
+            icon: "error",
+            title: "Removal Failed",
+            text:
+              error?.response?.data?.message ||
+              error?.message ||
+              "Failed to remove enrollment",
+          });
+        },
+      },
+    );
   };
 
   return (

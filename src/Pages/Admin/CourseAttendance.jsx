@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useCourseAttendance, useMarkAttendanceAdmin } from "../../hooks/useAttendance";
+import {
+  useCourseAttendance,
+  useMarkAttendanceAdmin,
+} from "../../hooks/useAttendance";
 import "../../styles/CourseAttendanceStyle.css";
+import Swal from "sweetalert2";
 
 const CourseAttendance = () => {
   const { id: courseId } = useParams();
@@ -21,24 +25,63 @@ const CourseAttendance = () => {
   }
 
   // Handle Marking Attendance
-  const handleToggleAttendance = async (studentId, attendanceId, currentStatus) => {
-    markAttendanceMutation.mutate({
-      studentId: studentId,
-      attendanceId: attendanceId,
-      present: !currentStatus,
-    }, {
-      onError: (err) => {
-        console.error("Failed to mark attendance", err);
-        alert("Failed to update attendance.");
+  const handleToggleAttendance = async (
+    studentId,
+    attendanceId,
+    currentStatus,
+  ) => {
+    markAttendanceMutation.mutate(
+      {
+        studentId: studentId,
+        attendanceId: attendanceId,
+        present: !currentStatus,
       },
-    });
+      {
+        onError: (err) => {
+          console.error("Failed to mark attendance", err);
+          Swal.fire({
+            icon: "error",
+            title: "Update Failed",
+            text: "Failed to update attendance.",
+          });
+        },
+      },
+    );
   };
 
   // Helper to get the currently selected session object
-  const currentSession = sessions.find((s) => s.id === parseInt(selectedSessionId));
+  const currentSession = sessions.find(
+    (s) => s.id === parseInt(selectedSessionId),
+  );
+
+  // Show a toast-style error when data loading fails
+  useEffect(() => {
+    if (isError || error) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Failed to load attendance",
+        text:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Error loading attendance",
+        showConfirmButton: false,
+        timer: 4000,
+        timerProgressBar: true,
+      });
+    }
+  }, [isError, error]);
 
   if (isLoading) return <div className="loading">Loading Attendance...</div>;
-  if (isError || error) return <div className="error">{error?.response?.data?.message || error?.message || "Error loading attendance"}</div>;
+  if (isError || error)
+    return (
+      <div className="error">
+        {error?.response?.data?.message ||
+          error?.message ||
+          "Error loading attendance"}
+      </div>
+    );
 
   return (
     <div className="attendance-container">
@@ -121,7 +164,7 @@ const CourseAttendance = () => {
                               handleToggleAttendance(
                                 student.id,
                                 currentSession.id,
-                                isPresent
+                                isPresent,
                               )
                             }
                           >

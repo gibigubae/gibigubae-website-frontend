@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCourses, useUpdateCourse, useDeleteCourse } from "../../hooks/useCourses";
+import {
+  useCourses,
+  useUpdateCourse,
+  useDeleteCourse,
+} from "../../hooks/useCourses";
 import CourseCard from "../../Components/CourseCard";
 import Swal from "sweetalert2";
 import LoadingPage from "../../Components/LoadingPage";
@@ -53,8 +57,12 @@ const CourseLists = () => {
     : [];
 
   // Extract unique years and semesters for filter options
-  const uniqueYears = [...new Set(courses.map(c => c.year_level).filter(Boolean))].sort();
-  const uniqueSemesters = [...new Set(courses.map(c => c.semester).filter(Boolean))].sort();
+  const uniqueYears = [
+    ...new Set(courses.map((c) => c.year_level).filter(Boolean)),
+  ].sort();
+  const uniqueSemesters = [
+    ...new Set(courses.map((c) => c.semester).filter(Boolean)),
+  ].sort();
 
   const filteredCourses = courses.filter((course) => {
     const matchesStatus =
@@ -62,9 +70,9 @@ const CourseLists = () => {
     const matchesSearch =
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesYear = 
+    const matchesYear =
       filterYear === "All" || course.year_level === parseInt(filterYear);
-    const matchesSemester = 
+    const matchesSemester =
       filterSemester === "All" || course.semester === parseInt(filterSemester);
     return matchesStatus && matchesSearch && matchesYear && matchesSemester;
   });
@@ -135,9 +143,13 @@ const CourseLists = () => {
           setEditingCourse(null);
         },
         onError: () => {
-          alert("Failed to update course");
+          Swal.fire({
+            icon: "error",
+            title: "Update Failed",
+            text: "Failed to update course",
+          });
         },
-      }
+      },
     );
   };
 
@@ -222,7 +234,11 @@ const CourseLists = () => {
         ) : isError ? (
           <ErrorPage
             title="Failed to Load Courses"
-            message={error?.response?.data?.message || error?.message || "Failed to load courses"}
+            message={
+              error?.response?.data?.message ||
+              error?.message ||
+              "Failed to load courses"
+            }
             onRetry={() => window.location.reload()}
           />
         ) : filteredCourses.length > 0 ? (

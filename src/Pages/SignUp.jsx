@@ -25,6 +25,8 @@ const SignUp = () => {
   });
 
   const [validationError, setValidationError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   // Use React Query mutation hook for signup
   const { mutate: signup, isPending, error, isError } = useSignup({
@@ -39,8 +41,105 @@ const SignUp = () => {
     localStorage.removeItem("userRole");
   }, []);
 
+  // Email validation function
+  const validateEmail = (email) => {
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+
+    // Extract domain
+    const domain = email.split('@')[1].toLowerCase();
+
+    // Block placeholder/test domains
+    const blockedDomains = [
+      'example.com',
+      'test.com',
+      'sample.com',
+      'demo.com',
+      'localhost',
+      'fake.com',
+      'invalid.com',
+      'placeholder.com',
+    ];
+
+    if (blockedDomains.includes(domain)) {
+      return `Email domain @${domain} is not allowed. Please use a real email address.`;
+    }
+
+    // Allow university domain
+    if (domain === 'aastustudent.edu.et') {
+      return null; // Valid
+    }
+
+    // Allow common email providers
+    const allowedDomains = [
+      'gmail.com',
+      'yahoo.com',
+      'outlook.com',
+      'hotmail.com',
+      'live.com',
+      'icloud.com',
+      'protonmail.com',
+      'zoho.com',
+      'aol.com',
+      'mail.com',
+    ];
+
+    if (allowedDomains.includes(domain)) {
+      return null; // Valid
+    }
+
+    // For other domains, check if they look legitimate (have proper TLD)
+    const legitimateTLDs = ['.com', '.net', '.org', '.edu', '.gov', '.et', '.edu.et'];
+    const hasLegitTLD = legitimateTLDs.some(tld => domain.endsWith(tld));
+    
+    if (!hasLegitTLD) {
+      return 'Please use a recognized email domain';
+    }
+
+    return null; // Valid for other legitimate domains
+  };
+
+  // Phone number validation function
+  const validatePhone = (phone) => {
+    // Remove any spaces, dashes, or other non-digit characters
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    // Must be exactly 9 digits
+    if (cleanPhone.length === 0) {
+      return null; // Empty is okay, required validation will catch it
+    }
+    
+    if (cleanPhone.length !== 9) {
+      return 'Phone number must be exactly 9 digits';
+    }
+    
+    // Must start with 9 or 7
+    const firstDigit = cleanPhone[0];
+    if (firstDigit !== '9' && firstDigit !== '7') {
+      return 'Phone number must start with 9 or 7 (e.g., 912345678 or 712345678)';
+    }
+    
+    return null; // Valid
+  };
+
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
+    
+    // Validate email on change
+    if (name === 'email') {
+      const error = validateEmail(value);
+      setEmailError(error || '');
+    }
+    
+    // Validate phone on change
+    if (name === 'phoneNumber') {
+      const error = validatePhone(value);
+      setPhoneError(error || '');
+    }
+    
     if (type === "file") {
       setFormData((prev) => ({
         ...prev,
@@ -75,6 +174,22 @@ const SignUp = () => {
       !formData.password
     ) {
       setValidationError("Please fill in all required fields");
+      return;
+    }
+
+    // Validate email
+    const emailValidationError = validateEmail(formData.email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
+      setValidationError(emailValidationError);
+      return;
+    }
+
+    // Validate phone number
+    const phoneValidationError = validatePhone(formData.phoneNumber);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      setValidationError(phoneValidationError);
       return;
     }
 
@@ -199,18 +314,23 @@ const SignUp = () => {
               {/* Phone & Gender */}
               <div className="form-row">
                 <div className="form-group">
-                  <div className="phone-input-wrapper">
+                  <div className={`phone-input-wrapper ${phoneError ? 'input-error' : ''}`}>
                     <span className="phone-prefix">+251</span>
                     <input
                       type="tel"
                       name="phoneNumber"
-                      placeholder="Phone Number"
+                      placeholder="9** ** ** ** (9 digits)"
                       value={formData.phoneNumber}
                       onChange={handleChange}
                       required
+                      maxLength="9"
+                      pattern="[79][0-9]{8}"
                       className="form-input phone-input"
                     />
                   </div>
+                  {phoneError && (
+                    <span className="error-text">{phoneError}</span>
+                  )}
                 </div>
                 <div className="form-group">
                   <select
@@ -337,12 +457,15 @@ const SignUp = () => {
                 <input
                   type="email"
                   name="email"
-                  placeholder="Email Address"
+                  placeholder="Email Address (e.g., name@gmail.com or name@aastustudent.edu.et)"
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="form-input"
+                  className={`form-input ${emailError ? 'input-error' : ''}`}
                 />
+                {emailError && (
+                  <span className="error-text">{emailError}</span>
+                )}
               </div>
 
               {/* Password */}

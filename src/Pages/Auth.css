@@ -102,6 +102,16 @@
   box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
 }
 
+.phone-input-wrapper.input-error {
+  border-color: #dc2626 !important;
+  background: #fef2f2 !important;
+}
+
+.phone-input-wrapper.input-error:focus-within {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+}
+
 .phone-prefix {
   padding: 12px 10px;
   color: #666;
@@ -306,6 +316,24 @@
   margin-bottom: 20px;
   font-size: 14px;
   border-left: 4px solid #c00;
+}
+
+.input-error {
+  border-color: #dc2626 !important;
+  background: #fef2f2 !important;
+}
+
+.input-error:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+}
+
+.error-text {
+  display: block;
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: 6px;
+  font-weight: 500;
 }
 
 /* =========================================
