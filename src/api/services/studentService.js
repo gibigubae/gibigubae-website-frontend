@@ -45,6 +45,26 @@ export const studentService = {
     const response = await apiClient.delete(`/student/admin/delete/${id}`);
     return response.data;
   },
+
+  /**
+   * Get current student's profile (self)
+   * Uses the /student/courses endpoint which returns student data along with courses
+   * @returns {Promise} Response with current student's data
+   */
+  getMyProfile: async () => {
+    const response = await apiClient.get('/student/courses');
+    return response.data;
+  },
+
+  /**
+   * Update current student's profile (self-update year only)
+   * @param {Object} data - { year: number }
+   * @returns {Promise} Response with updated student
+   */
+  updateMyProfile: async (data) => {
+    const response = await apiClient.put('/student/update/me', data);
+    return response.data;
+  },
 };
 
 export default studentService;

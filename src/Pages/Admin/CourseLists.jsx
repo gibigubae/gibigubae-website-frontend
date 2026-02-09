@@ -17,6 +17,8 @@ const CourseLists = () => {
 
   const [filterStatus, setFilterStatus] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterYear, setFilterYear] = useState("All");
+  const [filterSemester, setFilterSemester] = useState("All");
   const [editingCourse, setEditingCourse] = useState(null);
 
   // State for the edit form
@@ -39,6 +41,8 @@ const CourseLists = () => {
         end_date: course.end_date,
         enrollment_start_date: course.enrollment_start_date,
         enrollment_deadline: course.enrollment_deadline,
+        year_level: course.year_level,
+        semester: course.semester,
         status:
           new Date(course.start_date) > new Date()
             ? "Upcoming"
@@ -48,13 +52,21 @@ const CourseLists = () => {
       }))
     : [];
 
+  // Extract unique years and semesters for filter options
+  const uniqueYears = [...new Set(courses.map(c => c.year_level).filter(Boolean))].sort();
+  const uniqueSemesters = [...new Set(courses.map(c => c.semester).filter(Boolean))].sort();
+
   const filteredCourses = courses.filter((course) => {
     const matchesStatus =
       filterStatus === "All" || course.status === filterStatus;
     const matchesSearch =
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
+    const matchesYear = 
+      filterYear === "All" || course.year_level === parseInt(filterYear);
+    const matchesSemester = 
+      filterSemester === "All" || course.semester === parseInt(filterSemester);
+    return matchesStatus && matchesSearch && matchesYear && matchesSemester;
   });
 
   const handleEdit = (course) => {
@@ -160,6 +172,34 @@ const CourseLists = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+          </div>
+
+          <div className="filter-controls">
+            <select
+              className="filter-select"
+              value={filterYear}
+              onChange={(e) => setFilterYear(e.target.value)}
+            >
+              <option value="All">All Years</option>
+              {uniqueYears.map((year) => (
+                <option key={year} value={year}>
+                  Year {year}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className="filter-select"
+              value={filterSemester}
+              onChange={(e) => setFilterSemester(e.target.value)}
+            >
+              <option value="All">All Semesters</option>
+              {uniqueSemesters.map((semester) => (
+                <option key={semester} value={semester}>
+                  Semester {semester}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="filter-tabs">

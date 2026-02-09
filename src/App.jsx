@@ -13,6 +13,7 @@ import SignUp from "./Pages/SignUp";
 // Student Pages
 import CourseList from "./Pages/Students/CourseList";
 import CourseDetail from "./Pages/Students/CourseDetail";
+import Settings from "./Pages/Students/Settings";
 import RecordAttendanceModal from "./Components/RecordAttendanceModal";
 import StudentLayout from "./Pages/Students/StudentLayout";
 
@@ -68,6 +69,7 @@ export default function App() {
           >
             <Route path="courses" element={<CourseList />} />
             <Route path="course/:id" element={<CourseDetail />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="attendance" element={<RecordAttendanceModal />} />
             <Route index element={<Navigate to="courses" replace />} />
           </Route>
