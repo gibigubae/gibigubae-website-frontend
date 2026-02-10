@@ -292,8 +292,8 @@ const CourseLists = () => {
               />
             </div>
 
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <div className="modal-form-group" style={{ flex: 1 }}>
+            <div className="modal-date-row">
+              <div className="modal-form-group">
                 <label className="modal-label">Start Date</label>
                 <input
                   type="datetime-local"
@@ -305,7 +305,7 @@ const CourseLists = () => {
                 />
               </div>
 
-              <div className="modal-form-group" style={{ flex: 1 }}>
+              <div className="modal-form-group">
                 <label className="modal-label">End Date</label>
                 <input
                   type="datetime-local"
@@ -318,8 +318,8 @@ const CourseLists = () => {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <div className="modal-form-group" style={{ flex: 1 }}>
+            <div className="modal-date-row">
+              <div className="modal-form-group">
                 <label className="modal-label">Enrollment Start</label>
                 <input
                   type="datetime-local"
@@ -334,7 +334,7 @@ const CourseLists = () => {
                 />
               </div>
 
-              <div className="modal-form-group" style={{ flex: 1 }}>
+              <div className="modal-form-group">
                 <label className="modal-label">Enrollment Deadline</label>
                 <input
                   type="datetime-local"

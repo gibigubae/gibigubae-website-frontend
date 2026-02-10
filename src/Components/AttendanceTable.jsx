@@ -65,7 +65,7 @@ const AttendanceTable = ({ courseId }) => {
           <thead>
             <tr>
               <th className="sticky-col header-col">
-                Student Name{" "}
+                Name{" "}
                 <span className="student-count">({students.length})</span>
               </th>
               {sessions.map((session) => (
@@ -84,7 +84,7 @@ const AttendanceTable = ({ courseId }) => {
               <tr key={student.id}>
                 <td className="sticky-col name-col">
                   <div className="student-name">
-                    {student.first_name} {student.father_name}
+                    {student.first_name}<br/> {student.father_name}
                   </div>
                   <div className="student-id">{student.id_number}</div>
                 </td>

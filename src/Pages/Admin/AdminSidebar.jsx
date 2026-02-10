@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
   Menu,
   BookOpen,
@@ -14,6 +15,9 @@ import "../../styles/AdminSidebar.css";
 const AdminSidebar = ({ collapsed, setCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(
+    window.innerWidth < 1024
+  );
 
   const logoutMutation = useLogout({
     onSuccess: () => {
@@ -26,6 +30,16 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
       navigate("/");
     },
   });
+
+  // Detect screen size changes
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileOrTablet(window.innerWidth < 1024);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -42,8 +56,13 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
 
         <button
           className="collapse-btn"
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={() => !isMobileOrTablet && setCollapsed(!collapsed)}
           title={collapsed ? "Expand" : "Collapse"}
+          disabled={isMobileOrTablet}
+          style={{
+            cursor: isMobileOrTablet ? "not-allowed" : "pointer",
+            opacity: isMobileOrTablet ? 0.5 : 1,
+          }}
         >
           <Menu size={24} />
         </button>

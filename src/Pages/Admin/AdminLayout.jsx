@@ -1,9 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar"; // Assuming file is named AdminNavBar.jsx
 
 const AdminLayout = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  // Initialize collapsed state based on screen size
+  const [collapsed, setCollapsed] = useState(() => {
+    return window.innerWidth < 1024; // Collapsed on mobile/tablet
+  });
+
+  // Force collapse on mobile/tablet, allow toggle on desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setCollapsed(true); // Always collapsed on mobile/tablet
+      }
+    };
+
+    // Add event listener
+    window.addEventListener("resize", handleResize);
+
+    // Initial check
+    handleResize();
+
+    // Cleanup
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <>

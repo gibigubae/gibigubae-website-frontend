@@ -20,16 +20,13 @@
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
-  background: white;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   flex-wrap: wrap;
 }
 
 .select-wrapper {
   flex: 1;
   min-width: 250px;
+  max-width: 350px; /* Prevent from being too wide */
 }
 
 .course-select {
@@ -43,6 +40,7 @@
 .search-wrapper {
   flex: 1;
   min-width: 250px;
+  max-width: 350px; /* Match select-wrapper width */
   position: relative;
 }
 
@@ -252,13 +250,123 @@
   margin-top: 20px;
 }
 
-@media (max-width: 768px) {
+/* Mobile Responsive Styles */
+@media (max-width: 767px) {
+  /* Reduce container padding */
+  .enrollment-container {
+    padding: 16px;
+  }
+
+  /* Stack controls vertically */
+  .controls-bar {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Remove min-width constraints */
+  .select-wrapper,
+  .search-wrapper {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* Scale down header text */
+  .page-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .page-header p {
+    font-size: 0.875rem;
+    margin-bottom: 16px;
+  }
+
+  /* Stack dual list vertically */
   .dual-list-container {
     grid-template-columns: 1fr;
     height: auto;
+    gap: 16px;
   }
 
+  /* Set panel height for mobile */
   .list-panel {
-    height: 400px;
+    min-height: 300px;
+    max-height: 400px;
+  }
+
+  /* Reduce panel header padding */
+  .panel-header {
+    padding: 12px;
+  }
+
+  .panel-header h3 {
+    font-size: 0.9rem;
+  }
+
+  /* Reduce panel body padding */
+  .panel-body {
+    padding: 8px;
+  }
+
+  /* Stack student info vertically for very small screens */
+  .student-item {
+    padding: 12px 8px;
+    gap: 8px;
+  }
+
+  .student-name {
+    font-size: 0.9rem;
+  }
+
+  .student-id {
+    font-size: 0.75rem;
+  }
+
+  /* Larger touch targets for buttons */
+  .enroll-btn {
+    padding: 10px 14px;
+    font-size: 0.875rem;
+    min-height: 44px; /* Touch-friendly */
+  }
+
+  .remove-btn {
+    padding: 10px;
+    min-width: 44px; /* Touch-friendly */
+    min-height: 44px;
+  }
+
+  /* Adjust student-left-group spacing */
+  .student-left-group {
+    gap: 8px;
+  }
+
+  /* Adjust count badges */
+  .count-badge {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+
+  /* Empty state sizing */
+  .empty-state {
+    height: 250px;
+  }
+
+  .empty-state h3 {
+    font-size: 1rem;
+  }
+
+  .empty-state p {
+    font-size: 0.875rem;
+    padding: 0 20px;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .enrollment-container {
+    padding: 20px;
+  }
+
+  .dual-list-container {
+    gap: 20px;
   }
 }

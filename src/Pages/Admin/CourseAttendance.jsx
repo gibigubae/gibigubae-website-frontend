@@ -143,7 +143,8 @@ const CourseAttendance = () => {
                         className={isPresent ? "present-row" : "absent-row"}
                       >
                         <td>
-                          {student.first_name} {student.father_name}
+                          {student.first_name} <br/>
+                          {student.father_name}
                         </td>
                         <td>{student.id_number}</td>
                         <td>

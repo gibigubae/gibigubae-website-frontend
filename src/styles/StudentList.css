@@ -279,3 +279,168 @@
   gap: 8px;
   cursor: pointer;
 }
+
+/* Mobile Card View Styles */
+.student-cards {
+  display: none; /* Hidden by default, shown on mobile */
+  flex-direction: column;
+  gap: 16px;
+}
+
+.student-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.2s;
+}
+
+.student-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.card-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-value {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 500;
+  text-align: right;
+  flex: 1;
+  margin-left: 12px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+  flex-wrap: wrap; /* Allow wrapping if needed */
+}
+
+.card-actions .btn-icon {
+  flex: 1 1 auto; /* Allow flexible sizing */
+  min-width: 0; /* Allow shrinking below content size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflow */
+}
+
+.card-actions .btn-icon span {
+  display: inline;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-actions .btn-icon.view {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.card-actions .btn-icon.edit {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.card-actions .btn-icon.delete {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Responsive Design - Mobile First */
+@media (max-width: 767px) {
+  /* Hide table on mobile */
+  .table-responsive {
+    display: none;
+  }
+
+  /* Show cards on mobile */
+  .student-cards {
+    display: flex;
+  }
+
+  /* Adjust container padding */
+  .student-list-container {
+    padding: 16px;
+  }
+
+  /* Stack page header */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header h1 {
+    font-size: 1.25rem;
+  }
+
+  /* Make search bar full width */
+  .search-bar {
+    width: 100%;
+  }
+
+  .search-bar input {
+    min-width: 0;
+    flex: 1;
+  }
+}
+
+/* Tablet and Desktop */
+@media (min-width: 768px) {
+  /* Show table on tablet/desktop */
+  .table-responsive {
+    display: block;
+  }
+
+  /* Hide cards on tablet/desktop */
+  .student-cards {
+    display: none;
+  }
+}

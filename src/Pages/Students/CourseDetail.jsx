@@ -219,7 +219,7 @@ const CourseDetail = () => {
                   >
                     <td>{rec.date}</td>
                     <td>
-                      {rec.timeStart} — {rec.timeEnd}
+                      {rec.timeStart} <br/>{rec.timeEnd}
                     </td>
                     <td>
                       <span className={`status-badge ${rec.status}`}>

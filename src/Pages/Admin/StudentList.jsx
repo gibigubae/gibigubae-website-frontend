@@ -242,6 +242,77 @@ const StudentList = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Card View for Mobile */}
+          <div className="student-cards">
+            {students.length > 0 ? (
+              students.map((student) => (
+                <div key={student.id} className="student-card">
+                  <div className="card-header">
+                    <div className="card-name">
+                      {student.first_name} {student.father_name}{" "}
+                      {student.grand_father_name}
+                    </div>
+                    <span
+                      className={`status-badge ${student.is_verified ? "verified" : "pending"}`}
+                    >
+                      {student.is_verified ? "✓" : "⋯"}
+                    </span>
+                  </div>
+                  <div className="card-body">
+                    <div className="card-row">
+                      <span className="card-label">ID:</span>
+                      <span className="card-value">{student.id_number}</span>
+                    </div>
+                    <div className="card-row">
+                      <span className="card-label">Department:</span>
+                      <span className="card-value">
+                        {student.department || "-"}
+                      </span>
+                    </div>
+                    <div className="card-row">
+                      <span className="card-label">Year:</span>
+                      <span className="card-value">{student.year || "-"}</span>
+                    </div>
+                    <div className="card-row">
+                      <span className="card-label">Dorm:</span>
+                      <span className="card-value">
+                        {student.dorm_block ? `Block ${student.dorm_block}` : "-"} / Room {student.room_number || "-"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="card-actions">
+                    <button
+                      className="btn-icon view"
+                      onClick={() => setViewingStudent(student)}
+                      title="View Details"
+                    >
+                      <Eye size={18} />
+                      <span>View</span>
+                    </button>
+                    <button
+                      className="btn-icon edit"
+                      onClick={() => openEditModal(student)}
+                      title="Edit"
+                    >
+                      <Edit2 size={18} />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      className="btn-icon delete"
+                      onClick={() => handleDelete(student.id)}
+                      title="Delete"
+                    >
+                      <Trash2 size={18} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="no-data">No students found.</div>
+            )}
+          </div>
           </>
         )}
 

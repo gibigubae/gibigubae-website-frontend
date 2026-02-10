@@ -100,12 +100,6 @@ const CourseList = () => {
         <div className="course-list-header">
           <h1 className="page-title">Courses</h1>
 
-          {/* {data?.student && (
-            <div style={{ marginBottom: "1rem", color: "#666" }}>
-              <p><strong>Student:</strong> {data.student.name} (Year {data.student.year})</p>
-              <p><strong>Total Courses:</strong> {data.totalCourses}</p>
-            </div>
-          )} */}
 
           <input
             type="text"

@@ -3,6 +3,9 @@
   padding: 16px;
   max-width: 1400px;
   margin: 0 auto;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  width: 100%;
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .page-header {
@@ -173,7 +176,7 @@
 /* Charts */
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Reduced from 400px */
   gap: 20px;
   margin-bottom: 24px;
 }
@@ -195,7 +198,7 @@
 
 .chart-box {
   width: 100%;
-  height: 280px;
+  min-height: 280px; /* Changed from height to min-height */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -874,6 +877,18 @@
   .top-courses-section {
     grid-template-columns: 1fr;
   }
+  
+  /* Breakdown lists stack on tablet/mobile */
+  .breakdown-lists {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Monthly header stacks */
+  .monthly-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }
 
 @media (max-width: 700px) {
@@ -893,19 +908,48 @@
     padding: 10px 16px;
     font-size: 14px;
   }
+  
+  /* Filter row stacks */
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Breakdown stats stack */
+  .breakdown-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  /* Chart heights reduce on tablet */
+  .chart-box {
+    height: 240px;
+  }
+  
+  /* Student performance grid stacks */
+  .student-performance-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Monthly stats grid stacks */
+  .monthly-stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 500px) {
+  /* Single column for KPIs */
   .kpi-grid {
     grid-template-columns: 1fr;
   }
 
+  /* Stack page header */
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
 
+  /* Reduce table text size */
   .analytics-table {
     font-size: 12px;
   }
@@ -913,5 +957,113 @@
   .analytics-table th,
   .analytics-table td {
     padding: 8px;
+  }
+  
+  /* Reduce container padding */
+  .analytics-container {
+    padding: 12px;
+  }
+  
+  /* Reduce card padding */
+  .chart-card,
+  .table-card {
+    padding: 12px;
+  }
+  
+  .chart-card h2,
+  .table-card h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  /* Reduce chart height for mobile */
+  .chart-box {
+    height: 200px;
+  }
+  
+  /* Reduce KPI card padding */
+  .kpi-card {
+    padding: 12px;
+  }
+  
+  .kpi-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .kpi-value {
+    font-size: 20px;
+  }
+  
+  .kpi-label {
+    font-size: 12px;
+  }
+  
+  /* Stack monthly filters */
+  .monthly-filters {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .month-selector {
+    width: 100%;
+  }
+  
+  /* Reduce filter section padding */
+  .filter-section {
+    padding: 12px;
+  }
+  
+  /* Reduce summary section padding */
+  .summary-section {
+    padding: 12px;
+  }
+  
+  /* Adjust title size */
+  .title-group h1 {
+    font-size: 20px;
+  }
+  
+  /* Refresh button smaller */
+  .refresh-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  
+  /* Tab buttons smaller */
+  .tab-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  /* Performance cards smaller padding */
+  .performance-card {
+    padding: 12px;
+  }
+  
+  /* Breakdown content smaller padding */
+  .breakdown-content {
+    padding: 12px;
+    margin: 4px;
+  }
+  
+  /* Student list smaller padding */
+  .student-list {
+    padding: 12px;
+  }
+  
+  /* Course monthly section smaller padding */
+  .course-monthly-section {
+    padding: 12px;
+  }
+  
+  /* Effectiveness section title smaller */
+  .effectiveness-section h2 {
+    font-size: 16px;
+  }
+  
+  /* Participation section title smaller */
+  .participation-section h2 {
+    font-size: 16px;
   }
 }

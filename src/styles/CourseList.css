@@ -14,6 +14,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 16px;
+  box-sizing: border-box; /* Ensure padding is included in width */
+  width: 100%; /* Explicit full width */
 }
 
 .page-title {
@@ -24,15 +26,19 @@
   width: 100%;
 }
 
-/* Find this existing block and update it */
+/* Search Wrapper - Responsive */
 .search-wrapper {
   position: relative;
-  min-width: 0; /* Changed from 200px to 0 to prevent flexbox locking */
-  /* width: 100%;  <-- Ensure this line is here or inherited */
+  width: 100%; /* Full width on mobile */
+  flex: 1 1 100%; /* Take full width in flex container */
+  min-width: 0; /* Allow flexbox to shrink below content size */
+  max-width: 100%; /* Never exceed container width */
+  box-sizing: border-box; /* Ensure consistent box model */
 }
 
 .search-input {
-  width: 100%;
+  width: 100%; /* Full width to match wrapper */
+  box-sizing: border-box; /* Include padding and border in width */
   padding: 12px 16px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -56,6 +62,8 @@
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  width: 100%; /* Full width on mobile */
+  flex: 1 1 100%; /* Take full width in flex container */
 }
 
 .filter-select {
@@ -68,7 +76,9 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 140px;
+  flex: 1 1 auto; /* Flexible width */
+  min-width: 120px; /* Reduced min-width for mobile */
+  max-width: 100%; /* Prevent overflow */
 }
 
 .filter-select:hover {
@@ -90,6 +100,8 @@
   padding-bottom: 4px;
   -webkit-overflow-scrolling: touch;
   flex-shrink: 0; /* Prevents tabs from being squashed by the search bar */
+  width: 100%; /* Full width on mobile */
+  flex: 1 1 100%; /* Take full width in flex container */
 }
 
 .filter-tab {
@@ -157,10 +169,26 @@
 
   .page-title {
     font-size: 32px;
+    width: 100%; /* Title takes full width, forcing others to next row */
   }
 
   .search-wrapper {
     max-width: 400px;
+    margin-left: auto; /* Push search to the right */
+  }
+
+  /* Filter controls on the right */
+  .filter-controls {
+    width: auto; /* Don't take full width */
+    flex: 0 0 auto; /* Don't grow */
+    margin-left: auto; /* Push to the right if on same row */
+  }
+
+  /* Filter tabs on the right */
+  .filter-tabs {
+    width: auto; /* Don't take full width */
+    flex: 0 0 auto; /* Don't grow */
+    margin-left: auto; /* Push to the right if on same row */
   }
 }
 
@@ -169,35 +197,39 @@
   .course-list-header {
     display: flex;
     flex-direction: row;
-    flex-wrap: nowrap; /* Keep single line */
+    flex-wrap: wrap; /* Allow wrapping if needed */
     align-items: center;
-    gap: 16px; /* Reduced gap to save space */
-    justify-content: flex-start; /* Align items starting from left */
+    gap: 16px;
+    justify-content: flex-start;
   }
 
-  /* 1. Title: Dynamic width, but doesn't take 'auto' margin anymore */
+  /* Title and search on the same row */
   .page-title {
     width: auto;
-    margin-right: 0; /* Remove margin-right: auto so it doesn't push others off */
-    flex-shrink: 0; /* Keep title readable */
+    margin-right: 0;
+    flex-shrink: 0;
   }
 
-  /* 2. Search Wrapper: Flexible width */
+  /* Search Wrapper: Flexible width */
   .search-wrapper {
     margin: 0;
-    order: 0;
-    flex: 1 1 auto; /* Grow to fill space, Shrink if needed */
-    max-width: 300px; /* Don't get larger than 300px */
-    min-width: 150px; /* Don't shrink smaller than 150px */
+    flex: 1 1 auto; /* Grow to fill space */
+    max-width: 300px;
+    min-width: 150px;
   }
 
-  /* 3. Filter Tabs: Push to the end */
+  /* Filter controls: Push to the right on second row or align right */
+  .filter-controls {
+    flex: 0 0 auto;
+    width: auto;
+    margin-left: auto; /* Push to the right */
+  }
+
+  /* Filter Tabs: Align to the right */
   .filter-tabs {
-    flex-shrink: 0;
+    flex: 0 0 auto;
     width: auto;
     margin: 0;
-    order: 0;
-    margin-left: auto; /* Push filters to the far right */
   }
 }
 
@@ -254,27 +286,27 @@
 
 .modal-content {
   background-color: #ffffff;
-  padding: 2rem;
+  padding: 1.5rem; /* Reduced padding for mobile */
   border-radius: 12px;
-  width: 90%;
+  width: 95%; /* Slightly wider on mobile */
   max-width: 500px;
-  max-height: 90vh;
+  max-height: 85vh; /* More space for scrolling on mobile */
   overflow-y: auto; /* Scroll if screen is small */
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.3s ease-out;
 }
 
 .modal-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem; /* Smaller on mobile */
   font-weight: 700;
   color: #1f2937;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem; /* Reduced margin for mobile */
   text-align: center;
 }
 
 /* Form Elements inside Modal */
 .modal-form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 0.875rem; /* Slightly reduced for mobile */
 }
 
 .modal-label {
@@ -371,3 +403,47 @@
     opacity: 1;
   }
 }
+
+/* Responsive Media Queries for Modal */
+@media (min-width: 640px) {
+  .modal-content {
+    padding: 2rem; /* More padding on tablets and up */
+    width: 90%; /* Slightly narrower on tablets */
+  }
+  
+  .modal-title {
+    font-size: 1.5rem; /* Larger on tablets */
+    margin-bottom: 1.5rem;
+  }
+  
+  .modal-form-group {
+    margin-bottom: 1rem; /* More spacing on tablets */
+  }
+}
+
+@media (min-width: 768px) {
+  .modal-content {
+    width: 85%; /* Even narrower on larger tablets/desktop */
+  }
+}
+
+/* Modal Date Row - Responsive */
+.modal-date-row {
+  display: flex;
+  flex-direction: column; /* Stack vertically on mobile */
+  gap: 0; /* No gap on mobile since margin-bottom handles it */
+}
+
+@media (min-width: 640px) {
+  .modal-date-row {
+    flex-direction: row; /* Side by side on tablets and up */
+    gap: 1rem; /* Add gap between fields */
+  }
+  
+  .modal-date-row .modal-form-group {
+    flex: 1; /* Equal width for both date fields */
+    margin-bottom: 1rem; /* Maintain spacing */
+  }
+}
+
+
