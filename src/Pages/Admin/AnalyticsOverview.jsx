@@ -612,7 +612,7 @@ const AnalyticsOverview = () => {
                                       isExpanded ? null : session.id
                                     )}
                                   >
-                                    {isExpanded ? "Hide" : "View"} Breakdown
+                                    {isExpanded ? "Hide" : "View"} details
                                   </button>
                                 </td>
                               </tr>
@@ -622,7 +622,7 @@ const AnalyticsOverview = () => {
                                 <tr className="breakdown-row">
                                   <td colSpan="5">
                                     {breakdownLoading ? (
-                                      <div className="breakdown-loading">Loading breakdown...</div>
+                                      <div className="breakdown-loading">Loading details...</div>
                                     ) : attendanceBreakdownData ? (
                                       <div className="breakdown-content">
                                         <div className="breakdown-stats">
