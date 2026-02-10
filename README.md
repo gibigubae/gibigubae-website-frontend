@@ -1,9 +1,5 @@
 # Gibigubae Website - Frontend
 
-![Project Banner]()
-
-<!-- Add your project banner/screenshot here -->
-
 ## 📋 Overview
 
 Gibigubae Website Frontend is a comprehensive attendance management system built with React. The application provides separate portals for students and administrators, enabling efficient course enrollment, attendance tracking, and analytics.
@@ -68,63 +64,22 @@ Gibigubae Website Frontend is a comprehensive attendance management system built
 
 ### Admin Dashboard
 
-![Admin Dashboard]()
-
-<!-- Add admin dashboard screenshot here -->
+<img width="1898" height="900" alt="image" src="https://github.com/user-attachments/assets/049b1d71-5ea1-4f1d-b2fa-59f20d24fbb3" />
 
 ### Mobile View
 
-![Mobile Responsive]()
+<img width="419" height="720" alt="image" src="https://github.com/user-attachments/assets/a05d5933-4a03-4e43-8f72-b0eebe28b030" />
 
-<!-- Add mobile view screenshot here -->
+### Attendance Table
+<img width="1910" height="911" alt="image" src="https://github.com/user-attachments/assets/b13035d2-2410-433d-8456-65ba0bb446e9" />
 
 ### Analytics Page
 
-![Analytics]()
+<img width="1915" height="902" alt="image" src="https://github.com/user-attachments/assets/c98cfb0b-4ed8-4b6a-8559-ac0f992934f8" />
+<img width="1900" height="903" alt="image" src="https://github.com/user-attachments/assets/32c69210-eed4-47c3-8554-81e4ef773192" />
+<img width="1919" height="903" alt="image" src="https://github.com/user-attachments/assets/f858eb04-8b69-4684-add5-53925e34e027" />
+<img width="1916" height="909" alt="image" src="https://github.com/user-attachments/assets/ad073445-282f-4da4-85cc-1f7b06db4df3" />
 
-<!-- Add analytics screenshot here -->
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-
-### Installation
-
-1. Clone the repository
-
-```bash
-git clone https://github.com/yourusername/gibigubae-website-frontend.git
-cd gibigubae-website-frontend
-```
-
-2. Install dependencies
-
-```bash
-npm install
-```
-
-3. Create environment file
-
-```bash
-# Create .env file in root directory
-VITE_API_URL=your_backend_api_url
-```
-
-4. Start development server
-
-```bash
-npm run dev
-```
-
-The application will be available at `http://localhost:5173`
-
-### Build for Production
-
-```bash
-npm run build
 ```
 
 ## 📱 Mobile Responsiveness
@@ -142,15 +97,18 @@ The application is fully responsive with specific optimizations:
 ## 🏗️ Project Structure
 
 ```
-src/
-├── Components/        # Reusable UI components
-├── Pages/
-│   ├── Admin/        # Admin portal pages
-│   └── Students/     # Student portal pages
-├── hooks/            # Custom React hooks
-├── styles/           # CSS stylesheets
-└── App.jsx           # Main app component
-```
+
+  ```
+  src/
+  ├── Components/        # Reusable UI components
+  ├── Pages/
+  │   ├── Admin/        # Admin portal pages
+  │   └── Students/     # Student portal pages
+  ├── hooks/
+  ├── api/         # Custom React hooks
+  ├── styles/           # CSS stylesheets
+  └── App.jsx           # Main app component
+  ```
 
 ## 🔐 Authentication
 
@@ -171,20 +129,3 @@ The application uses cookie-based authentication with the following routes:
 - At-risk student identification
 - Monthly summaries and comparisons
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 👥 Authors
-
-**Leul** - Developer
-
-## 🙏 Acknowledgments
-
-- Built with React and modern web technologies
-- Icons by Lucide React
-- Charts powered by Chart.js and Recharts
